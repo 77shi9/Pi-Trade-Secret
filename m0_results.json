@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-11-26T10:38:57+00:00",
+  "site_url": "https://danfoss.sharepoint.com/sites/TradeSecret",
+  "summary": {
+    "total": 11,
+    "passed": 8,
+    "failed": 3,
+    "critical_failed": [
+      "T3",
+      "T4"
+    ]
+  },
+  "results": [
+    {
+      "test": "T1",
+      "title": "web select incl. HasUniqueRoleAssignments",
+      "critical": true,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web?$select=Id,Title,ServerRelativeUrl,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Webs/@Element&$select=Id,Title,ServerRelativeUrl,HasUniqueRoleAssignments\", \"odata.type\": \"SP.Web\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web\", \"odata.editLink\": \"Web\", \"HasUniqueRoleAssignments\": true, \"Id\": \"59b88f73-04fc-4796-ba10-7da00955d81d\", \"ServerRelativeUrl\": \"/sites/TradeSecret\", \"Title\": \"Trade Secret\"}",
+      "notes": "site unique permissions: True"
+    },
+    {
+      "test": "T2",
+      "title": "libraries combined $select with flag + $expand=RootFolder",
+      "critical": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists?$top=200&$select=Id,Title,BaseType,Hidden,HasUniqueRoleAssignments,RootFolder/ServerRelativeUrl&$expand=RootFolder",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Lists&$select=Id,Title,BaseType,Hidden,HasUniqueRoleAssignments,RootFolder/ServerRelativeUrl\", \"value\": [{\"odata.type\": \"SP.List\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web/Lists(guid'55575167-9b8a-4377-bfae-93a634bce834')\", \"odata.etag\": \"\\\"0\\\"\", \"odata.editLink\": \"Web/Lists(guid'55575167-9b8a-4377-bfae-93a634bce834')\", \"RootFolder@odata.navigationLinkUrl\": \"Web/Lists(guid'55575167-9b8a-4377-bfae-93a634bce834')/RootFolder\", \"RootFolder\": {\"odata.type\": \"SP.Folder\", \"odat...[truncated]",
+      "notes": "19 lists (0 doc libraries); flag present: True"
+    },
+    {
+      "test": "T2b",
+      "title": "single library $select fallback",
+      "critical": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('55575167-9b8a-4377-bfae-93a634bce834')?$select=Id,Title,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Lists/@Element&$select=Id,Title,HasUniqueRoleAssignments\", \"odata.type\": \"SP.List\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web/Lists(guid'55575167-9b8a-4377-bfae-93a634bce834')\", \"odata.etag\": \"\\\"0\\\"\", \"odata.editLink\": \"Web/Lists(guid'55575167-9b8a-4377-bfae-93a634bce834')\", \"HasUniqueRoleAssignments\": false, \"Id\": \"55575167-9b8a-4377-bfae-93a634bce834\", \"Title\": \"appdata\"}",
+      "notes": "flag present: True; library unique: False"
+    },
+    {
+      "test": "T2c",
+      "title": "library rootfolder $select fallback",
+      "critical": false,
+      "ok": false,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('55575167-9b8a-4377-bfae-93a634bce834')/rootfolder?$select=ServerRelativeUrl,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Folders1/@Element&$select=ServerRelativeUrl,HasUniqueRoleAssignments\", \"odata.type\": \"SP.Folder\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web/GetFolderByServerRelativePath(decodedurl='/sites/TradeSecret/_catalogs/appdata')\", \"odata.editLink\": \"Web/GetFolderByServerRelativePath(decodedurl='/sites/TradeSecret/_catalogs/appdata')\", \"ServerRelativeUrl\": \"/sites/TradeSecret/_catalogs/appdata\"}",
+      "notes": "flag present: False; root unique: False"
+    },
+    {
+      "test": "T3",
+      "title": "list items $select with HasUniqueRoleAssignments (CRITICAL Phase 1)",
+      "critical": true,
+      "ok": false,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('55575167-9b8a-4377-bfae-93a634bce834')/items?$top=25&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ListData.OData__x005f_catalogs_x002f_appdataItems&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments\", \"value\": []}",
+      "notes": "0 items sampled; flag present: False; unique in sample: 0"
+    },
+    {
+      "test": "T4",
+      "title": "web roleassignments (fallback: no unique item in sample) (CRITICAL Phase 2)",
+      "critical": true,
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/roleassignments?$expand=RoleDefinitionBindings,Member&$top=50",
+      "excerpt": "",
+      "notes": "Member.LoginName=None; Member.Id=None; roles=n/a; error: HTTP 403 for /sites/TradeSecret/_api/web/roleassignments: {\"odata.error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Attempted to perform an unauthorized operation.\"}}}"
+    },
+    {
+      "test": "T5a",
+      "title": "graph site by host:path",
+      "critical": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/sites/danfoss.sharepoint.com:/sites/TradeSecret",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#sites/$entity\", \"createdDateTime\": \"2026-11-04T04:34:55.763Z\", \"description\": \"Trade Secret #personal\", \"id\": \"danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d\", \"lastModifiedDateTime\": \"2026-11-26T08:42:55Z\", \"name\": \"TradeSecret\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\", \"displayName\": \"Trade Secret\", \"root\": {}, \"siteCollection\": {\"hostname\": \"danfoss.sharepoint.com\"}}",
+      "notes": "graph site id: danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d"
+    },
+    {
+      "test": "T5b",
+      "title": "graph drives",
+      "critical": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/sites/danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d/drives?$top=20&$select=id,name,driveType,webUrl",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#drives(id,name,driveType,webUrl)\", \"value\": [{\"id\": \"b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI\", \"name\": \"Documents\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Shared%20Documents\", \"driveType\": \"documentLibrary\"}, {\"id\": \"b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL\", \"name\": \"Trade Secret Library\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Trade%20Secret%20Library\", \"driveType\": \"documentLibrary\"}]}",
+      "notes": "2 drives; chosen: Documents"
+    },
+    {
+      "test": "T5c",
+      "title": "graph drive root children",
+      "critical": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/root/children?$top=10&$select=id,name,file,folder",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)\", \"value\": [{\"@odata.etag\": \"\\\"{5001AD9B-D23D-4472-BACB-38BD83544EB0},2\\\"\", \"id\": \"01S4KOHXM3VUAVAPOSOJCLVSZYXWBVITVQ\", \"name\": \"test\", \"folder\": {\"childCount\": 0}}, {\"@odata.etag\": \"\\\"{15939ABC-59C6-4A3C-8885-ACF4AEF58A54},1\\\"\", \"id\": \"01S4KOHXN4TKJRLRSZHRFIRBNM6SXPLCSU\", \"name\": \"Trade Secret\", \"folder\": {\"childCount\": 0}}]}",
+      "notes": "2 children; chosen: test"
+    },
+    {
+      "test": "T5d",
+      "title": "graph driveItem permissions / sharing links (CRITICAL link layer)",
+      "critical": true,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/items/01S4KOHXM3VUAVAPOSOJCLVSZYXWBVITVQ/permissions",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#drives('b%21uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI')/items('01S4KOHXM3VUAVAPOSOJCLVSZYXWBVITVQ')/permissions\", \"value\": [{\"id\": \"VHJhZGUgU2VjcmV0IE93bmVycw\", \"roles\": [\"owner\"], \"shareId\": \"VHJhZGUgU2VjcmV0IE93bmVycw\", \"grantedToV2\": {\"siteGroup\": {\"displayName\": \"Trade Secret Owners\", \"id\": \"3\", \"loginName\": \"Trade Secret Owners\"}, \"sharePointGroup\": {\"id\": \"NzNiMDg3YjktODJlOS00YTc4LWI2NzEtODRkNmYwOTdmZTBiXzM\", \"title\": \"Trade Secret Owners\", \"principalId\": \"3\"}}, \"grantedTo\": {\"user\": {\"displayName\": \"Tr...[truncated]",
+      "notes": "8 permissions on chosen item; link.type=None; link.scope=None; grantedToIdentitiesV2=False; inheritedFrom=True"
+    },
+    {
+      "test": "T6",
+      "title": "token claims (audience / scopes)",
+      "critical": false,
+      "ok": true,
+      "status": null,
+      "url": "-",
+      "excerpt": "",
+      "notes": "{\"graph\": {\"aud\": \"00000003-0000-0000-c000-000000000000\", \"scp\": \"AccessReview.Read.All AdministrativeUnit.Read.All Agreement.Read.All APIConnectors.Read.All APIConnectors.ReadWrite.All Application.Read.All Application.ReadWrite.All AppRoleAssignment.ReadWrite.All AuditLog.Read.All DelegatedPermissionGrant.ReadWrite.All Device.Read.All Device.ReadWrite.All DeviceManagementApps.Read.All DeviceManagementConfiguration.Read.All DeviceManagementConfiguration.ReadWrite.All DeviceManagementManagedDevices.Read.All DeviceManagementManagedDevices.ReadWrite.All DeviceManagementRBAC.Read.All DeviceManagementServiceConfig.ReadWrite.All Directory.AccessAsUser.All Directory.Read.All Directory.ReadWrite.All email EntitlementManagement.Read.All Group.Read.All Group.ReadWrite.All GroupMember.Read.All GroupMember.ReadWrite.All IdentityProvider.Read.All IdentityUserFlow.Read.All Mail.Send OnlineMeetings.ReadWrite OnPremDirectorySynchronization.Read.All OnPremisesPublishingProfiles.ReadWrite.All openid Organization.Read.All Policy.Read.All Policy.Read.PermissionGrant Policy.ReadWrite.ApplicationConfiguration PrivilegedEligibilitySchedule.Read.AzureADGroup profile Reports.Read.All RoleEligibilitySchedule.Read.Directory RoleEligibilitySchedule.ReadWrite.Directory RoleManagement.Read.All RoleManagement.Read.Directory RoleManagement.ReadWrite.Directory SharePointTenantSettings.Read.All Sites.Read.All Tasks.Read.All Team.ReadBasic.All Teamwork.Read.All TeamworkAppSettings.ReadWrite.All TeamworkDevice.Read.All User.Read User.Read.All User.ReadBasic.All User.ReadWrite.All UserAuthenticationMethod.Read.All UserAuthenticationMethod.ReadWrite.All\", \"upn\": \"yong.hu@danfoss.com\", \"tid\": \"097464b8-069c-453e-9254-c17ec707310d\"}, \"sharepoint\": {\"aud\": \"00000003-0000-0ff1-ce00-000000000000\", \"scp\": \"AccessReview.Read.All AdministrativeUnit.Read.All Agreement.Read.All APIConnectors.Read.All APIConnectors.ReadWrite.All Application.Read.All Application.ReadWrite.All AppRoleAssignment.ReadWrite.All AuditLog.Read.All DelegatedPermissionGrant.ReadWrite.All Device.Read.All Device.ReadWrite.All DeviceManagementApps.Read.All DeviceManagementConfiguration.Read.All DeviceManagementConfiguration.ReadWrite.All DeviceManagementManagedDevices.Read.All DeviceManagementManagedDevices.ReadWrite.All DeviceManagementRBAC.Read.All DeviceManagementServiceConfig.ReadWrite.All Directory.AccessAsUser.All Directory.Read.All Directory.ReadWrite.All EntitlementManagement.Read.All Group.Read.All Group.ReadWrite.All GroupMember.Read.All GroupMember.ReadWrite.All IdentityProvider.Read.All IdentityUserFlow.Read.All Mail.Send OnlineMeetings.ReadWrite OnPremDirectorySynchronization.Read.All OnPremisesPublishingProfiles.ReadWrite.All Organization.Read.All Policy.Read.All Policy.Read.PermissionGrant Policy.ReadWrite.ApplicationConfiguration PrivilegedEligibilitySchedule.Read.AzureADGroup Reports.Read.All RoleEligibilitySchedule.Read.Directory RoleEligibilitySchedule.ReadWrite.Directory RoleManagement.Read.All RoleManagement.Read.Directory RoleManagement.ReadWrite.Directory SharePointTenantSettings.Read.All Sites.Read.All Tasks.Read.All Team.ReadBasic.All Teamwork.Read.All TeamworkAppSettings.ReadWrite.All TeamworkDevice.Read.All User.Read User.Read.All User.ReadBasic.All User.ReadWrite.All UserAuthenticationMethod.Read.All UserAuthenticationMethod.ReadWrite.All\", \"upn\": \"yong.hu@danfoss.com\", \"tid\": \"097464b8-069c-453e-9254-c17ec707310d\"}}"
+    }
+  ]
+}

@@ -3,4 +3,4 @@ __pycache__/
 data/
 output/
 *.sqlite3
-m0_results.json
+
