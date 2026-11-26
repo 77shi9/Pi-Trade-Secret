@@ -1,0 +1,6 @@
+__pycache__/
+.cache/
+data/
+output/
+*.sqlite3
+m0_results.json
