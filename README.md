@@ -20,7 +20,7 @@ Trade Secret Governance S3 的后继项目：以 `HasUniqueRoleAssignments` 为�
 | m0 / m0b 端点验证（真实租户已确认） | 完成 |
 | `scan/` Phase 1 作用域发现 + Phase 2 独立对象展开 + 落库 | 完成（v3.0） |
 | `cli.py` scan / status | 完成 |
-| `query/` 邮箱 → 授权清单 | M2 |
+| `query/` 邮箱 → 授权清单 | 完成（v4.0） |
 | `remediate/` plan / apply / verify | M3 |
 
 ## 快速开始
@@ -58,5 +58,6 @@ git checkout v2.1        # 切换到指定版本
 | v2.1 | M0b 补测：真实库端点探针、minimalmetadata 分页修复 |
 | v3.0 | M1 两阶段扫描器：scan/ + cli.py + parse（见 RELEASE_LOG.txt） |
 | v3.1 | cli.py dump：数据库转结构化文本（便于粘贴分享） |
+| v4.0 | M2 查询：cli.py query <email> 授权清单+清除建议（见 RELEASE_LOG.txt） |
 
 之后：大版本对应里程碑（v3.0 = M1 扫描器、v4.0 = M2 查询、v5.0 = M3 清除闭环、v6.0 = M4 对照），小版本（v2.2…）为里程碑内的增量推送。

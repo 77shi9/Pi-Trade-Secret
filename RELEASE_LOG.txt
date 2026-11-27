@@ -1,6 +1,12 @@
 s3scope 版本日志（每次推送一个新版本，最新在最上面）
 =====================================================
 
+v4.0 | 2026-11-27 10:10 | M2 邮箱 → 授权清单查询
+  新增: query/offboarding.py + cli.py query 命令
+  用途: python cli.py query <email> [--db ...] [--json out.json]
+  输出: 直接授权 / 站点组成员 / 共享链接(收件人/创建者) / M365组 / 通过组访问 / 清除建议(M3预览)
+  特性: 系统组(Limited Access/SharingLinks.*)不进清除建议；多人链接只建议移除单人
+
 v3.1 | 2026-11-27 09:55 | dump 命令（数据库转文本）
   新增: python cli.py dump [--limit N]
   用途: 把 SQLite 内容变成可直接粘贴/推送的文本（二进制 .sqlite3 不能直接贴）

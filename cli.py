@@ -185,6 +185,68 @@ def cmd_dump(args: argparse.Namespace) -> int:
         conn.close()
 
 
+def cmd_query(args: argparse.Namespace) -> int:
+    db_path = Path(args.db)
+    if not db_path.exists():
+        print(f"数据库不存在: {db_path}（先运行 scan）")
+        return 1
+    conn = connect(db_path)
+    try:
+        from query.offboarding import query_grants, remediation_hints, via_group_summary
+
+        report = query_grants(conn, args.email)
+        hints = remediation_hints(report)
+        via = via_group_summary(report)
+
+        print("=" * 64)
+        print(f"查询        {report['email']}")
+        print(f"直接授权    {len(report['direct_grants'])} 处")
+        for g in report["direct_grants"]:
+            print(f"  [{g['scope_type']:<7}] {g['root_path']}  {g['roles']}")
+
+        print(f"站点组成员  {len(report['site_group_memberships'])} 个")
+        for m in report["site_group_memberships"]:
+            flag = " [系统组]" if m["is_system"] else (" [默认组]" if m["is_default_group"] else "")
+            print(f"  {m['group_name']} ({m['group_id']}){flag}")
+
+        print(f"共享链接    {len(report['sharing_links'])} 处")
+        for l in report["sharing_links"]:
+            role_bits = []
+            if l["is_recipient"]:
+                role_bits.append("收件人" + ("(多人)" if l["multi_recipient"] else "(唯一)"))
+            if l["is_owner"]:
+                role_bits.append("创建者")
+            print(f"  [{l['scope_type']:<7}] {l['root_path']}  "
+                  f"{l['link_type']}/{l['link_scope']}  {'/'.join(role_bits)}")
+
+        if report["m365_group_memberships"]:
+            print(f"M365 组     {len(report['m365_group_memberships'])} 个（建议人工处理）")
+            for m in report["m365_group_memberships"]:
+                print(f"  {m['group_name'] or m['group_key']}")
+
+        print(f"通过组访问  {len(report['via_group_access'])} 个作用域（来自 {len(via)} 个组）")
+        for row in via[:10]:
+            print(f"  {row['group']} -> {row['roles']} 于 {row['scope_count']} 个作用域"
+                  f"（覆盖 {row['inheriting_objects']} 个对象）")
+
+        print(f"\n清除建议（M3 预览，共 {len(hints)} 项）")
+        for i, h in enumerate(hints, 1):
+            target = h.get("scope_path") or h.get("group") or h.get("link") or ""
+            note = f"  {h.get('note') or h.get('roles') or ''}" if (h.get("note") or h.get("roles")) else ""
+            print(f"  {i:>2}. {h['action']:<32} {target}{note}")
+        print("=" * 64)
+
+        if args.json:
+            payload = {**report, "remediation_hints": hints,
+                       "via_group_summary": via}
+            Path(args.json).write_text(
+                json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"JSON 已写入 {args.json}")
+        return 0
+    finally:
+        conn.close()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="s3scope", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -206,6 +268,12 @@ def main(argv: list[str] | None = None) -> int:
     dump_parser.add_argument("--limit", type=int, default=100,
                              help="每节最多输出行数（默认 100）")
     dump_parser.set_defaults(func=cmd_dump)
+
+    query_parser = sub.add_parser("query", help="邮箱 -> 完整授权清单（离线）")
+    query_parser.add_argument("email")
+    query_parser.add_argument("--db", default=str(DEFAULT_DB))
+    query_parser.add_argument("--json", default=None, help="可选：同时写入 JSON 文件")
+    query_parser.set_defaults(func=cmd_query)
 
     args = parser.parse_args(argv)
     return args.func(args)
