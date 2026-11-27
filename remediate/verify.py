@@ -50,6 +50,7 @@ def verify_user(site_url: str, db_path: str, email: str,
                 *, session: Any = None, client: Any = None) -> dict:
     """Re-scan, re-query, and report residual access for one user."""
     conn = connect(db_path)
+    init_schema(conn)
     try:
         before_report = query_grants(conn, email)
         before = _footprint(before_report)

@@ -1,0 +1,32 @@
+{
+  "operation_id": "20261127T030232_caf15b",
+  "target_email": "writer@danfoss.com",
+  "generated_at": "2026-11-27T03:02:32+00:00",
+  "source_run_id": "20261127T030232_e7a661",
+  "operations": [
+    {
+      "op": "delete_role_assignment",
+      "method": "manual",
+      "principal_key": "user:writer@danfoss.com",
+      "principal_email": "writer@danfoss.com",
+      "principal_id": null,
+      "roles": "write",
+      "scope_id": "item:LIB1:1",
+      "scope_type": "folder",
+      "path": "/sites/TS/Docs/sub",
+      "site_id": "WEB1",
+      "list_id": "LIB1",
+      "item_id": 1,
+      "graph_drive_id": null,
+      "graph_item_id": null,
+      "graph_permission_id": null
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "by_op": {
+      "delete_role_assignment": 1
+    },
+    "executable": 0
+  }
+}

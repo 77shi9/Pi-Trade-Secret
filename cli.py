@@ -64,6 +64,7 @@ def cmd_status(args: argparse.Namespace) -> int:
         print(f"数据库不存在: {db_path}（先运行 scan）")
         return 1
     conn = connect(db_path)
+    init_schema(conn)
     try:
         status = schema_status(conn)
         last_run = conn.execute(
@@ -110,6 +111,7 @@ def cmd_dump(args: argparse.Namespace) -> int:
         print(f"数据库不存在: {db_path}（先运行 scan）")
         return 1
     conn = connect(db_path)
+    init_schema(conn)
     try:
         run = conn.execute(
             "SELECT run_id, status, started_at, completed_at, stats_json FROM scan_runs "
@@ -191,6 +193,7 @@ def cmd_query(args: argparse.Namespace) -> int:
         print(f"数据库不存在: {db_path}（先运行 scan）")
         return 1
     conn = connect(db_path)
+    init_schema(conn)
     try:
         from query.offboarding import query_grants, remediation_hints, via_group_summary
 
@@ -253,6 +256,7 @@ def cmd_plan(args: argparse.Namespace) -> int:
         print(f"数据库不存在: {db_path}（先运行 scan）")
         return 1
     conn = connect(db_path)
+    init_schema(conn)
     try:
         from remediate.plan import build_plan
 
@@ -292,6 +296,7 @@ def cmd_apply(args: argparse.Namespace) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s")
     conn = connect(db_path)
+    init_schema(conn)
     try:
         from remediate.apply import execute_plan
 
