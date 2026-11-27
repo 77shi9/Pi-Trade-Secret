@@ -144,7 +144,10 @@ def build_plan(conn: sqlite3.Connection, email: str,
             continue
         login_row = conn.execute(
             "SELECT member_login, member_email FROM site_group_members "
-            "WHERE group_id = ? AND (member_key = ? OR member_email = ?)",
+            "WHERE group_id = ? AND (member_key = ? OR member_email = ?) "
+            "AND last_seen_run_id = (SELECT run_id FROM scan_runs "
+            "WHERE scan_mode = 'scope_full' "
+            "ORDER BY started_at DESC, rowid DESC LIMIT 1)",
             (member["group_id"], report["principal_key"], email),
         ).fetchone()
         operations.append({

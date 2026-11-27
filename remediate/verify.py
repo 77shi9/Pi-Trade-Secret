@@ -12,7 +12,7 @@ from typing import Any
 
 from query.offboarding import query_grants
 from scan.scanner import run_scan
-from store.schema import connect
+from store.schema import connect, init_schema
 
 LOGGER = logging.getLogger("s3scope.verify")
 

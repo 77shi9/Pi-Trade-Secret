@@ -25,9 +25,19 @@ def _is_system_group(group_name: str) -> bool:
     return name.startswith("Limited Access") or name.startswith("SharingLinks.")
 
 
+def _latest_run_id(conn: sqlite3.Connection) -> str | None:
+    """The latest full scan — queries reflect current state as of this run."""
+    row = conn.execute(
+        "SELECT run_id FROM scan_runs WHERE scan_mode = 'scope_full' "
+        "ORDER BY started_at DESC, rowid DESC LIMIT 1"
+    ).fetchone()
+    return row["run_id"] if row else None
+
+
 def query_grants(conn: sqlite3.Connection, email: str) -> dict:
     email = str(email or "").strip().lower()
     principal_key = f"user:{email}"
+    latest_run = _latest_run_id(conn)
 
     direct = [
         dict(row) for row in conn.execute(
@@ -37,9 +47,9 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
             "FROM role_assignments ra "
             "JOIN permission_scopes ps ON ps.scope_id = ra.scope_id "
             "LEFT JOIN principals p ON p.principal_key = ra.principal_key "
-            "WHERE ra.principal_key = ? "
+            "WHERE ra.principal_key = ? AND ra.last_seen_run_id = ? "
             "ORDER BY ps.root_path",
-            (principal_key,),
+            (principal_key, latest_run),
         )
     ]
 
@@ -48,9 +58,10 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
             "SELECT sg.group_id, sg.group_name, sg.is_default_group, m.member_login "
             "FROM site_group_members m "
             "JOIN site_groups sg ON sg.site_id = m.site_id AND sg.group_id = m.group_id "
-            "WHERE m.member_key = ? OR m.member_email = ? "
+            "WHERE (m.member_key = ? OR m.member_email = ?) "
+            "AND m.last_seen_run_id = ? "
             "ORDER BY sg.group_id",
-            (principal_key, email),
+            (principal_key, email, latest_run),
         )
     ]
     for row in memberships:
@@ -61,9 +72,10 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
         "sl.web_url, sl.recipients_json, sl.recipient_count, sl.owner_email "
         "FROM sharing_links sl "
         "JOIN permission_scopes ps ON ps.scope_id = sl.scope_id "
-        "WHERE sl.owner_email = ? OR sl.recipients_json LIKE ? "
+        "WHERE (sl.owner_email = ? OR sl.recipients_json LIKE ?) "
+        "AND sl.last_seen_run_id = ? "
         "ORDER BY ps.root_path",
-        (email, f"%{email}%"),
+        (email, f"%{email}%", latest_run),
     ).fetchall()
     links = []
     for row in link_rows:
@@ -94,9 +106,10 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
         dict(row) for row in conn.execute(
             "SELECT group_key, group_name, group_mail "
             "FROM m365_group_members "
-            "WHERE member_key = ? OR member_email = ? "
+            "WHERE (member_key = ? OR member_email = ?) "
+            "AND last_seen_run_id = ? "
             "ORDER BY group_name",
-            (principal_key, email),
+            (principal_key, email, latest_run),
         )
     ]
 
@@ -108,9 +121,10 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
             "JOIN site_groups sg ON sg.site_id = m.site_id AND sg.group_id = m.group_id "
             "JOIN role_assignments ra ON ra.principal_key = 'spgroup:' || m.group_id "
             "JOIN permission_scopes ps ON ps.scope_id = ra.scope_id "
-            "WHERE m.member_key = ? OR m.member_email = ? "
+            "WHERE (m.member_key = ? OR m.member_email = ?) "
+            "AND m.last_seen_run_id = ? AND ra.last_seen_run_id = ? "
             "ORDER BY ps.root_path",
-            (principal_key, email),
+            (principal_key, email, latest_run, latest_run),
         )
     ]
 
