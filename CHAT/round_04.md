@@ -167,3 +167,124 @@ Results written to C:\Python_Projects\Pi\Pi-Trade-Secret\m3_probe_results.json
 
 
 同样的2要求管理员审批，奇怪，为什么会触发？你应该要求了特别的命令，记住yong.hu@danfoss.com是site创建者，也就是我，所以我有较高的权限，但是只能管理我的这个trade secret
+
+
+我的目标不是获取租户级权限，也不是管理其它 SharePoint Site。
+我的目标仅限于：
+我已经拥有 Full Control 的 Trade Secret Site；
+我是该 Site 的 Owner/Administrator；
+我希望通过程序执行与网页操作等价的权限治理动作；
+例如移除离职人员权限、移除组成员、验证清权结果；
+操作范围仅限当前 Site，而非整个 Tenant。
+我怀疑的问题
+当前 M3 Probe 采用了 Graph 写接口：
+Plain Text
+DELETE /drives/{drive}/items/{item}/permissions/{id}
+并主动申请：
+Plain Text
+Files.ReadWrite
+Sites.Read.All
+甚至测试：
+Plain Text
+Sites.ReadWrite.All
+Sites.FullControl.All
+但这可能偏离了实际需求。
+因为：
+Plain Text
+我的目标是 Site 级权限治理
+而不是：
+Plain Text
+Tenant 级 Graph 管理
+请 Pi 重点验证
+Question 1
+对于下列场景：
+Plain Text
+用户是 SharePoint Site Owner
+用户拥有 Full Control
+仅管理自己负责的 Site
+是否能够仅依赖：
+Plain Text
+SharePoint REST API
+以及：
+Plain Text
+当前用户身份
+完成：
+Plain Text
+移除Role Assignment
+移除Group Member
+修改Item Permission
+而无需：
+Plain Text
+Sites.ReadWrite.All
+Sites.FullControl.All
+Question 2
+对于：
+Plain Text
+_api/web/lists(...)
+_api/web/roleassignments(...)
+_api/web/sitegroups(...)
+这些 SharePoint REST 写操作，
+SharePoint 是否主要依据：
+Plain Text
+当前用户在目标Site中的权限
+进行授权，
+而不是依据：
+Plain Text
+Graph OAuth Scope
+进行授权？
+Question 3
+如果用户已经能够在浏览器中：
+Plain Text
+Site Permissions
+Manage Access
+Remove User
+Remove Group Member
+成功执行，
+那么理论上是否应存在一条 API 路径能够复用同样的 Site Owner 权限模型，
+而不需要申请：
+Plain Text
+Sites.ReadWrite.All
+或
+Plain Text
+Sites.FullControl.All
+这样的 Tenant 级权限？
+我的判断（供 Pi 验证）
+我认为当前 Probe 可能存在一个设计假设：
+Plain Text
+Graph DELETE Permission
+↓
+需要 Graph Scope
+↓
+申请 Files.ReadWrite
+但我的实际需求可能属于：
+Plain Text
+SharePoint Site Administration
+↓
+SharePoint REST API
+↓
+依据Site Owner权限授权
+因此：
+Plain Text
+被拒绝的可能并不是“我没有管理目标Site的权限”
+而是：
+Plain Text
+Probe选择了Graph写接口，
+而Graph写接口要求额外OAuth Scope，
+这些Scope在企业环境中需要管理员批准。
+与项目目标的关系
+Trade Secret 项目的目标是：
+Plain Text
+发现权限
+治理权限
+清除权限
+验证权限已移除
+而不是获取整个 Danfoss 租户所有 SharePoint Site 的管理权。项目后续重点也是展开组成员、获取 Site Administrator、接入 Audit 数据以及清权后重新验证。
+因此希望优先寻找：
+Plain Text
+Site Scope
+Site Owner
+Least Privilege
+的实现路径，而不是：
+Plain Text
+Tenant-Wide Graph Permissions
+路径。
