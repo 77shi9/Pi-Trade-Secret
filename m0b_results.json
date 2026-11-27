@@ -1,0 +1,214 @@
+{
+  "generated_at": "2026-11-27T01:12:24+00:00",
+  "site_url": "https://danfoss.sharepoint.com/sites/TradeSecret",
+  "summary": {
+    "logged_in_as": "yong.hu@danfoss.com",
+    "total": 18,
+    "passed": 13,
+    "failed": 4,
+    "skipped": 1,
+    "critical_failed": [
+      "A5-D2"
+    ]
+  },
+  "results": [
+    {
+      "test": "A1",
+      "title": "graph site",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/sites/danfoss.sharepoint.com:/sites/TradeSecret",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#sites/$entity\", \"createdDateTime\": \"2026-11-04T04:34:55.763Z\", \"description\": \"Trade Secret #personal\", \"id\": \"danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d\", \"lastModifiedDateTime\": \"2026-11-26T08:42:55Z\", \"name\": \"TradeSecret\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\", \"displayName\": \"Trade Secret\", \"root\": {}, \"siteCollection\": {\"hostname\": \"danfoss.sharepoint.com\"}}",
+      "notes": "site id: danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d"
+    },
+    {
+      "test": "A1",
+      "title": "graph drives (document libraries only)",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/sites/danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d/drives?$top=20&$select=id,name,driveType,webUrl",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#drives(id,name,driveType,webUrl)\", \"value\": [{\"id\": \"b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI\", \"name\": \"Documents\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Shared%20Documents\", \"driveType\": \"documentLibrary\"}, {\"id\": \"b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL\", \"name\": \"Trade Secret Library\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Trade%20Secret%20Library\", \"driveType\": \"documentLibrary\"}]}",
+      "notes": "2 doc libraries: Documents, Trade Secret Library"
+    },
+    {
+      "test": "A7",
+      "title": "graph sites/{id}/permissions (site level)",
+      "critical": false,
+      "skipped": false,
+      "ok": false,
+      "status": 403,
+      "url": "https://graph.microsoft.com/v1.0/sites/danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d/permissions",
+      "excerpt": "",
+      "notes": "0 site permission entries; error: HTTP 403 for /v1.0/sites/danfoss.sharepoint.com,73b087b9-82e9-4a78-b671-84d6f097fe0b,59b88f73-04fc-4796-ba10-7da00955d81d/permissions: {\"error\":{\"code\":\"accessDenied\",\"message\":\"Access denied\",\"innerError\":{\"date\":\"2026-11-27T01:12:05\",\"request-id\":\"617a2252-bdfc-440c-a3cf-f86c9627779a\",\"client-request-id\":\"617a2252-bdfc-440c-a3cf-f8..."
+    },
+    {
+      "test": "A2-D1",
+      "title": "root sharepointIds [Documents]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/root?$select=id,name,webUrl,sharepointIds",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)/$entity\", \"id\": \"01S4KOHXN6Y2GOVW7725BZO354PWSELRRZ\", \"name\": \"root\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Shared%20Documents\", \"sharepointIds\": {\"listId\": \"6d9f7fe0-d185-49ef-9e9e-1c4df9352948\", \"listItemUniqueId\": \"0476bb28-ec34-46f0-9972-de309a950aec\", \"siteId\": \"73b087b9-82e9-4a78-b671-84d6f097fe0b\", \"siteUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\", \"tenantId\": \"097464b8-069c-453e-9254-c17ec707310d\", \"webId\": \"59b88f73-04fc-4796-ba10-7da00955d81d\"}}",
+      "notes": "listId: 6d9f7fe0-d185-49ef-9e9e-1c4df9352948; siteUrl: https://danfoss.sharepoint.com/sites/TradeSecret"
+    },
+    {
+      "test": "A3-D1",
+      "title": "library select incl. flag [Documents]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('6d9f7fe0-d185-49ef-9e9e-1c4df9352948')?$select=Id,Title,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Lists/@Element&$select=Id,Title,HasUniqueRoleAssignments\", \"odata.type\": \"SP.List\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web/Lists(guid'6d9f7fe0-d185-49ef-9e9e-1c4df9352948')\", \"odata.etag\": \"\\\"9\\\"\", \"odata.editLink\": \"Web/Lists(guid'6d9f7fe0-d185-49ef-9e9e-1c4df9352948')\", \"HasUniqueRoleAssignments\": false, \"Id\": \"6d9f7fe0-d185-49ef-9e9e-1c4df9352948\", \"Title\": \"Documents\"}",
+      "notes": "flag present: True; library unique: False"
+    },
+    {
+      "test": "A4-D1",
+      "title": "items $select incl. flag [Documents] (CRITICAL Phase 1)",
+      "critical": true,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('6d9f7fe0-d185-49ef-9e9e-1c4df9352948')/items?$top=50&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ListData.Shared_x0020_DocumentsItems&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments\", \"value\": [{\"odata.type\": \"SP.Data.Shared_x0020_DocumentsItem\", \"odata.id\": \"74250b0c-4dc2-43ec-9fc3-2a32ac50cbf2\", \"odata.etag\": \"\\\"2\\\"\", \"odata.editLink\": \"Web/Lists(guid'6d9f7fe0-d185-49ef-9e9e-1c4df9352948')/Items(1)\", \"HasUniqueRoleAssignments\": false, \"Id\": 1, \"FileLeafRef\": \"test\", \"ID\": 1, \"FileRef\": \"/sites/TradeSecret/Shared Documents/test\", \"FSObjType\": 1}, {\"odata.type\": \"SP.Data.Shared_x0020_D...[truncated]",
+      "notes": "sample 2 items (2 folders / 0 files); flag present: True; unique in sample: 0; nextLink: False"
+    },
+    {
+      "test": "A5-D1",
+      "title": "item roleassignments expand [Documents] (CRITICAL Phase 2 REST)",
+      "critical": true,
+      "skipped": true,
+      "ok": false,
+      "status": null,
+      "url": "",
+      "excerpt": "",
+      "notes": "skipped: no unique item in sample"
+    },
+    {
+      "test": "A6-D1",
+      "title": "list roleassignments expand [Documents]",
+      "critical": false,
+      "skipped": false,
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('6d9f7fe0-d185-49ef-9e9e-1c4df9352948')/roleassignments?$expand=RoleDefinitionBindings,Member&$top=20",
+      "excerpt": "",
+      "notes": "entries present: False; error: HTTP 403 for /sites/TradeSecret/_api/web/lists('6d9f7fe0-d185-49ef-9e9e-1c4df9352948')/roleassignments: {\"odata.error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Attempted to perform an unauthorized operation.\"}}}"
+    },
+    {
+      "test": "A8-D1",
+      "title": "graph path lookup [Documents]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/root:/test?$select=id,name",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)/$entity\", \"@odata.etag\": \"\\\"{5001AD9B-D23D-4472-BACB-38BD83544EB0},2\\\"\", \"id\": \"01S4KOHXM3VUAVAPOSOJCLVSZYXWBVITVQ\", \"name\": \"test\"}",
+      "notes": "rel='test' -> id: 01S4KOHXM3VUAVAPOSOJCLVSZYXWBVITVQ"
+    },
+    {
+      "test": "A10-D1",
+      "title": "graph delta first page [Documents]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/root/delta?$select=id,name,parentReference&$top=100",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)\", \"@odata.deltaLink\": \"https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3gf59thdHvSZ6eHE35NSlI/root/delta?$select=id,name,parentReference&$top=100&token=NDslMjM0OyUyMzE7Mzs2ZDlmN2ZlMC1kMTg1LTQ5ZWYtOWU5ZS0xYzRkZjkzNTI5NDg7NjM5MzEzMzg3MjkzNDAwMDAwOzEyNDQ1NjA4NDk7JTIzOyUyMzslMjMwOyUyMw\", \"@microsoft.graph.hasMoreData\": false, \"@microsoft.graph.syncStatus\": \"FullData\", \"value\": [{\"@odata.type\": \"#microsoft.graph.driveItem\", \"id\": \"01S4KOHXN6Y2GOVW7725BZO354PWSELRRZ\", \"name\": \"roo...[truncated]",
+      "notes": "3 entries; nextLink: False"
+    },
+    {
+      "test": "A2-D2",
+      "title": "root sharepointIds [Trade Secret Library]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/root?$select=id,name,webUrl,sharepointIds",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)/$entity\", \"id\": \"01S4KOHXN6Y2GOVW7725BZO354PWSELRRZ\", \"name\": \"root\", \"webUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret/Trade%20Secret%20Library\", \"sharepointIds\": {\"listId\": \"66d491e7-961a-4103-bf06-f9fa351f66cb\", \"listItemUniqueId\": \"69525fe0-3507-4062-86c9-c1787ffd5a39\", \"siteId\": \"73b087b9-82e9-4a78-b671-84d6f097fe0b\", \"siteUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\", \"tenantId\": \"097464b8-069c-453e-9254-c17ec707310d\", \"webId\": \"59b88f73-04fc-4796-ba10-7da00955d81d\"}}",
+      "notes": "listId: 66d491e7-961a-4103-bf06-f9fa351f66cb; siteUrl: https://danfoss.sharepoint.com/sites/TradeSecret"
+    },
+    {
+      "test": "A3-D2",
+      "title": "library select incl. flag [Trade Secret Library]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')?$select=Id,Title,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ApiData.Lists/@Element&$select=Id,Title,HasUniqueRoleAssignments\", \"odata.type\": \"SP.List\", \"odata.id\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/Web/Lists(guid'66d491e7-961a-4103-bf06-f9fa351f66cb')\", \"odata.etag\": \"\\\"14\\\"\", \"odata.editLink\": \"Web/Lists(guid'66d491e7-961a-4103-bf06-f9fa351f66cb')\", \"HasUniqueRoleAssignments\": true, \"Id\": \"66d491e7-961a-4103-bf06-f9fa351f66cb\", \"Title\": \"Trade Secret Library\"}",
+      "notes": "flag present: True; library unique: True"
+    },
+    {
+      "test": "A4-D2",
+      "title": "items $select incl. flag [Trade Secret Library] (CRITICAL Phase 1)",
+      "critical": true,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/items?$top=50&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments",
+      "excerpt": "{\"odata.metadata\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/$metadata#SP.ListData.Trade_x0020_Secret_x0020_LibraryItems&$select=Id,FSObjType,FileRef,FileLeafRef,HasUniqueRoleAssignments\", \"odata.nextLink\": \"https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists(%2766d491e7-961a-4103-bf06-f9fa351f66cb%27)/items?%24skiptoken=Paged%3dTRUE%26p_SortBehavior%3d0%26p_ID%3d31&%24top=50&%24select=Id%2cFSObjType%2cFileRef%2cFileLeafRef%2cHasUniqueRoleAssignments\", \"value\": [{\"odata.type\": \"SP.Data.Trade_x0020_Secret_x0020_LibraryItem\", \"odata.id\": \"a1c85102-24e8-46fd-9bc6-93ada102...[truncated]",
+      "notes": "sample 50 items (34 folders / 16 files); flag present: True; unique in sample: 6; nextLink: True"
+    },
+    {
+      "test": "A5-D2",
+      "title": "item roleassignments expand [Trade Secret Library] (CRITICAL Phase 2 REST)",
+      "critical": true,
+      "skipped": false,
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/items(6)/roleassignments?$expand=RoleDefinitionBindings,Member&$top=50",
+      "excerpt": "",
+      "notes": "on unique item id=6 path=/sites/TradeSecret/Trade Secret Library/Trade Secret/TS-L1; Member.LoginName=None; Member.Id=None; roles=n/a; error: HTTP 403 for /sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/items(6)/roleassignments: {\"odata.error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Attempted to perform an unauthorized operation.\"}}}"
+    },
+    {
+      "test": "A6-D2",
+      "title": "list roleassignments expand [Trade Secret Library]",
+      "critical": false,
+      "skipped": false,
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/roleassignments?$expand=RoleDefinitionBindings,Member&$top=20",
+      "excerpt": "",
+      "notes": "entries present: False; error: HTTP 403 for /sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/roleassignments: {\"odata.error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Attempted to perform an unauthorized operation.\"}}}"
+    },
+    {
+      "test": "A8-D2",
+      "title": "graph path lookup [Trade Secret Library]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/root:/Incoming/Formula_Test.docx?$select=id,name",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)/$entity\", \"@odata.etag\": \"\\\"{95595BEB-DEC3-4798-944A-3774A143603A},8\\\"\", \"id\": \"01S4KOHXPLLNMZLQ66TBDZISRXOSQUGYB2\", \"name\": \"Formula_Test.docx\"}",
+      "notes": "rel='Incoming/Formula_Test.docx' -> id: 01S4KOHXPLLNMZLQ66TBDZISRXOSQUGYB2"
+    },
+    {
+      "test": "A10-D2",
+      "title": "graph delta first page [Trade Secret Library]",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/root/delta?$select=id,name,parentReference&$top=100",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)\", \"@odata.nextLink\": \"https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/root/delta?$select=id,name,parentReference&$top=100&token=NDslMjMzOyUyMzE7Mzs2NmQ0OTFlNy05NjFhLTQxMDMtYmYwNi1mOWZhMzUxZjY2Y2I7NjM5MzEzMzg3MzU2NTcwMDAwOzEyNDQ1NjA4OTM7JTIzUGFnZWQ9VFJVRSUyNnBfSUQ9NDA2MTkyOyUyMzslMjMwOyUyMw\", \"@microsoft.graph.hasMoreData\": true, \"@microsoft.graph.syncStatus\": \"FullData\", \"value\": [{\"@odata.type\": \"#microsoft.graph.driveItem\", \"id\": \"01S4KOHXN6Y2GOVW772...[truncated]",
+      "notes": "101 entries; nextLink: True"
+    },
+    {
+      "test": "A9",
+      "title": "site groups + logged-in user membership",
+      "critical": false,
+      "skipped": false,
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/sitegroups?$top=200",
+      "excerpt": "",
+      "notes": "10 groups; 'yong.hu@danfoss.com' is member of: ['Limited Access System Group For List 66d491e7-961a-4103-bf06-f9fa351f66cb', 'Limited Access System Group For Web 59b88f73-04fc-4796-ba10-7da00955d81d', 'SharingLinks.ad5161b1-081a-403e-9819-b726cee977c9.Flexible.09ce0264-a0ca-4890-8497-838c3c021684', 'Trade Secret Owners', 'TS-L1 Group', 'TS-L2 Group', 'TS-L3 Group', 'TS-L3Plus Group']; failed group reads: 0"
+    }
+  ]
+}
