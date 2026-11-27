@@ -22,10 +22,48 @@ import sqlite3
 import uuid
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import quote, urlsplit
 
 from query.offboarding import query_grants
 
 LINK_ROLE = {"view": "read", "edit": "write"}
+
+
+def _host_root(site_url: str) -> str:
+    parts = urlsplit(site_url)
+    return f"{parts.scheme}://{parts.netloc}"
+
+
+def _ui_links(site_url: str, scope: dict, object_ids: dict) -> dict:
+    """Clickable browser pages for manual execution of each operation.
+
+    Even without any write consent, the site owner can perform every action
+    in the browser; these links land directly on the right page.
+    """
+    links: dict[str, str] = {}
+    if not site_url:
+        return links
+    site_url = site_url.rstrip("/")
+    root_path = scope.get("root_path")
+    list_id = object_ids.get("list_id")
+    item_id = object_ids.get("item_id")
+    if root_path:
+        links["item_url"] = _host_root(site_url) + quote(str(root_path), safe="/")
+    if item_id and list_id:
+        encoded_list = quote("{" + str(list_id) + "}", safe="")
+        links["permission_page"] = (
+            f"{site_url}/_layouts/15/user.aspx?"
+            f"obj={encoded_list},{item_id},LISTITEM&List={encoded_list}"
+        )
+    elif list_id:
+        encoded_list = quote("{" + str(list_id) + "}", safe="")
+        links["permission_page"] = (
+            f"{site_url}/_layouts/15/user.aspx?"
+            f"obj={encoded_list},LIST&List={encoded_list}"
+        )
+    else:  # site scope
+        links["permission_page"] = f"{site_url}/_layouts/15/user.aspx"
+    return links
 
 
 def _scope_graph_identity(conn: sqlite3.Connection, scope_id: str) -> dict:
@@ -56,6 +94,10 @@ def build_plan(conn: sqlite3.Connection, email: str,
     email = str(email or "").strip().lower()
     report = query_grants(conn, email)
     operations: list[dict[str, Any]] = []
+    site_row = conn.execute(
+        "SELECT site_url FROM scan_runs ORDER BY started_at DESC LIMIT 1"
+    ).fetchone()
+    site_url = (site_row["site_url"] if site_row else "") or ""
 
     # -- direct grants ------------------------------------------------------
     for grant in report["direct_grants"]:
@@ -87,6 +129,7 @@ def build_plan(conn: sqlite3.Connection, email: str,
             "graph_drive_id": drive,
             "graph_item_id": item,
             "graph_permission_id": permission_id,
+            "ui_links": _ui_links(site_url, scope, object_ids),
         })
 
     # -- site group memberships ----------------------------------------------
@@ -111,6 +154,10 @@ def build_plan(conn: sqlite3.Connection, email: str,
             "group_id": member["group_id"],
             "member_login": login_row["member_login"] if login_row else None,
             "member_email": email,
+            "ui_links": {
+                "group_page": (f"{site_url.rstrip('/')}/_layouts/15/people.aspx"
+                                f"?MembershipGroupId={member['group_id']}"),
+            },
         })
 
     # -- sharing links ----------------------------------------------------------
@@ -145,6 +192,8 @@ def build_plan(conn: sqlite3.Connection, email: str,
                         and r["user"].get("email")
                     ],
                     "removed_recipient": email,
+                    "ui_links": _ui_links(site_url, {"root_path": link["root_path"]},
+                                          {}),
                 })
             elif drive and item:
                 operations.append({
@@ -155,6 +204,8 @@ def build_plan(conn: sqlite3.Connection, email: str,
                     "graph_drive_id": drive,
                     "graph_item_id": item,
                     "note": "唯一收件人：整条撤销",
+                    "ui_links": _ui_links(site_url, {"root_path": link["root_path"]},
+                                          {}),
                 })
             else:
                 operations.append({
@@ -194,6 +245,7 @@ def build_plan(conn: sqlite3.Connection, email: str,
         "target_email": email,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source_run_id": last_run["run_id"] if last_run else None,
+        "site_url": site_url,
         "operations": operations,
         "summary": {
             "total": len(operations),
@@ -201,6 +253,9 @@ def build_plan(conn: sqlite3.Connection, email: str,
             "executable": sum(
                 1 for op in operations
                 if op.get("method") in ("graph", "rest")
+            ),
+            "with_ui_links": sum(
+                1 for op in operations if op.get("ui_links")
             ),
         },
     }

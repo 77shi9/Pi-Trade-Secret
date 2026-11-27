@@ -22,6 +22,20 @@
 4. **工程形态**：CLI 先行出数据；**dry-run 是默认，`--apply` 才执行写操作**；
    一切写操作入审计日志。
 
+## 运行模型（v6.0 定稿，用户确认）
+
+分层执行：盘点优先 + 手动辅助 + 可选升级。
+
+| 层 | 内容 | 前提 | 状态 |
+| --- | --- | --- | --- |
+| 层 1 | scan / query / plan（含手动深链接）/ verify 只读闭环 | Site Owner + Sites.Read.All（已有） | ✅ 今天可用 |
+| 层 2 | 文件/链接级自动清除（Graph 写） | 一次管理员同意 Files.ReadWrite（租户已禁用户级同意） | 待管理员支持 |
+| 层 3 | 组移除/站点级 roleassignment 自动化 | Sites.Selected + 自建 App（单站点） | 不做（组量小，手动+深链接） |
+
+关键实证（m3_probe，见 results/）：REST/Graph 写全部 403；
+租户禁用用户级同意（Files.ReadWrite 也需管理员审批）；
+组成员读取不受限（保留组成员清单）。
+
 ## 交付物
 
 1. **治理系统**：scan → query → plan → apply → verify 闭环

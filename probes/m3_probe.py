@@ -35,7 +35,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[1]   # repo root
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--list", default=DEFAULT_LIST, help="REST list GUID of the library")
     parser.add_argument("--item", type=int, default=DEFAULT_ITEM, help="REST item id")
     parser.add_argument("--group", type=int, default=DEFAULT_GROUP, help="site group id probe")
-    parser.add_argument("--json-out", default=str(BASE_DIR / "m3_probe_results.json"))
+    parser.add_argument("--json-out", default=str(BASE_DIR / "results" / "m3_probe_results.json"))
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
 

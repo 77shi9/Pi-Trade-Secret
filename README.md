@@ -10,7 +10,28 @@ Trade Secret Governance S3 的后继项目：以 `HasUniqueRoleAssignments` 为�
 
 目标、边界与验收标准见 **GOALS.md**。
 
-## 当前状态：v3.0 — M1 两阶段扫描器
+## 项目结构
+
+```
+s3scope/
+├── cli.py                  # scan / query / plan / apply / verify / status / dump
+├── core/                   # auth (TokenSession) + http (ScHttpClient) + parse
+├── scan/                   # Phase 1 作用域发现 + Phase 2 独立对象展开 + 落库
+├── query/                  # 邮箱 → 授权清单
+├── remediate/              # plan（含手动深链接）/ apply / verify
+├── store/                  # SQLite schema v2（增量迁移）
+├── probes/                 # 租户端点/写权限探测脚本（m0 / m0b / m3_probe）
+├── results/                # 探针结果与扫描转储（证据存档）
+├── plans/                  # 生成的清除方案 JSON
+├── tools/                  # 辅助工具（build_ppt.py）
+├── CHAT/                   # Pi 协作通道（round_NN.md + archive/）
+└── tests/                  # 39 个离线测试
+```
+
+运行模型（三层，详见 GOALS.md）：层 1 只读闭环今天可用；层 2 文件/链接级
+自动清除待一次管理员同意；组移除手动（深链接直达）。
+
+## 当前状态：v6.0 — 分层执行模型定稿
 
 | 组件 | 状态 |
 | --- | --- |

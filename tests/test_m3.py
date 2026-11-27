@@ -90,6 +90,24 @@ class M3PlanTest(unittest.TestCase):
         self.assertEqual(op["graph_drive_id"], "DRIVE1")
         self.assertEqual(op["graph_item_id"], "g_sub")
         self.assertEqual(op["graph_permission_id"], "p4")
+        # manual deep links are always present
+        links = op["ui_links"]
+        self.assertIn("/_layouts/15/user.aspx", links["permission_page"])
+        self.assertIn("LISTITEM", links["permission_page"])
+        self.assertEqual(links["item_url"].endswith("/sub"), True)
+
+    def test_plan_group_member_has_group_page_link(self):
+        conn = self._conn()
+        try:
+            plan = build_plan(conn, "yong.hu@danfoss.com")
+        finally:
+            conn.close()
+        group_ops = [op for op in plan["operations"]
+                     if op["op"] == "remove_site_group_member"]
+        self.assertEqual(len(group_ops), 1)
+        links = group_ops[0]["ui_links"]
+        self.assertIn("/_layouts/15/people.aspx?MembershipGroupId=3",
+                      links["group_page"])
 
     def test_plan_link_recipient_update_with_remaining(self):
         conn = self._conn()

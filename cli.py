@@ -268,15 +268,23 @@ def cmd_plan(args: argparse.Namespace) -> int:
     print(f"清除方案    {plan['target_email']}  ({plan['operation_id']})")
     print(f"数据源      扫描 {plan['source_run_id']}")
     print(f"操作        {plan['summary']['total']} 项，其中可自动执行 "
-          f"{plan['summary']['executable']} 项")
+          f"{plan['summary']['executable']} 项（需写权限），"
+          f"带手动链接 {plan['summary']['with_ui_links']} 项")
     for i, op in enumerate(plan["operations"], 1):
         target = (op.get("path") or op.get("group") or op.get("link")
                   or op.get("principal_email") or "")
         method = op.get("method", "-")
         extra = op.get("note") or op.get("roles") or ""
         print(f"  {i:>3}. {op['op']:<34} [{method:<6}] {target} {extra}")
+        links = op.get("ui_links") or {}
+        if links.get("permission_page"):
+            print(f"        手动入口: {links['permission_page']}")
+        elif links.get("group_page"):
+            print(f"        手动入口: {links['group_page']}")
+        elif links.get("item_url"):
+            print(f"        手动入口: {links['item_url']}")
     print("=" * 64)
-    print("提示: python cli.py apply <plan.json> 预览执行；加 --apply 才真正写入")
+    print("提示: 无写权限时，按『手动入口』链接在浏览器执行；完成后运行 verify 验证零残留")
 
     out = Path(args.out) if args.out else Path("plans") / f"{plan['operation_id']}.json"
     out.parent.mkdir(parents=True, exist_ok=True)

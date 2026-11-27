@@ -32,7 +32,7 @@ import urllib.parse
 from pathlib import Path
 from typing import Any, Mapping
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parents[1]   # repo root
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
@@ -47,7 +47,7 @@ GRAPH_BASE = "https://graph.microsoft.com/v1.0"
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="M0b follow-up endpoint probes")
     parser.add_argument("site_url", help="e.g. https://<tenant>.sharepoint.com/sites/<site>")
-    parser.add_argument("--json-out", default=str(BASE_DIR / "m0b_results.json"))
+    parser.add_argument("--json-out", default=str(BASE_DIR / "results" / "m0b_results.json"))
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
 
