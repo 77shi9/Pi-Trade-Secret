@@ -38,3 +38,35 @@ git push
 （在这行下面写结果/备注；写完保存，然后：
 `git add CHAT` → `git commit -m "round 02 回复"` → `git push`）
 
+(ts-governance) PS C:\Python_Projects\Pi\Pi-Trade-Secret> python cli.py scan https://danfoss.sharepoint.com/sites/TradeSecret
+2026-11-27 10:19:33,127 INFO    [AUTH] Loading token cache: C:\Python_Projects\Pi\Pi-Trade-Secret\.cache\msal_cache.bin
+2026-11-27 10:19:33,634 INFO    [AUTH] Attempting silent authentication (scopes=['Sites.Read.All'])...
+2026-11-27 10:19:33,638 INFO    [AUTH] Token acquired (audience=00000003-0000-0000-c000-000000000000, user=yong.hu@danfoss.com).
+2026-11-27 10:19:34,762 INFO    [AUTH] Attempting silent authentication (scopes=['https://danfoss.sharepoint.com/.default'])...
+2026-11-27 10:19:35,280 INFO    [AUTH] Token acquired (audience=00000003-0000-0ff1-ce00-000000000000, user=yong.hu@danfoss.com).
+2026-11-27 10:19:37,990 INFO    [SCAN] site=Trade Secret libraries=2
+2026-11-27 10:19:39,936 INFO    [SCAN] library 'Documents' items=2 unique=False
+2026-11-27 10:19:42,648 INFO    [SCAN] library 'Trade Secret Library' items=114 unique=True
+2026-11-27 10:19:50,361 INFO    [SCAN] site groups=10
+2026-11-27 10:19:51,727 INFO    [SCAN] delta map 'Documents': 3 entries
+2026-11-27 10:19:52,698 INFO    [SCAN] delta map 'Trade Secret Library': 98 entries
+2026-11-27 10:20:01,893 INFO    [SCAN] done run=20261127T021933_f657fb status=success objects=119 unique=9 requests=32
+
+============================================================
+站点        Trade Secret
+对象        119 个 (站点 1 / 库 2 / 文件夹 36 / 文件 80)
+独立作用域  9 个 (站点 1 / 库 1 / 文件夹 6 / 文件 1)  ← 例外权限
+继承率      92.4%  (110 个对象未读取权限)
+权限读取    9 次（仅独立作用域）
+API 请求    32 次
+授权        角色授权 63 行 / 共享链接 1 条 / 站点组 10 组 18 成员
+数据库      C:\Python_Projects\Pi\Pi-Trade-Secret\data\governance.sqlite3
+运行        20261127T021933_f657fb  状态 success  耗时 28.8s  错误 0
+============================================================
+
+(ts-governance) PS C:\Python_Projects\Pi\Pi-Trade-Secret> python m3_probe.py https://danfoss.sharepoint.com/sites/TradeSecret
+Traceback (most recent call last):
+  File "C:\Python_Projects\Pi\Pi-Trade-Secret\m3_probe.py", line 35, in <module>
+    from core.parse import _excerpt, _first_entry  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name '_excerpt' from 'core.parse' (C:\Python_Projects\Pi\Pi-Trade-Secret\core\parse.py)
