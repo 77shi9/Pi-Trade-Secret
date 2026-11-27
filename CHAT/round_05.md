@@ -81,3 +81,20 @@ git push
 （在这行下面写结果/备注；写完保存，然后：
 `git add CHAT` → `git commit -m "round 05 回复"` → `git push`）
 
+从 TS-L2 组移除xuguifang@danfoss.com
+
+(ts-governance) PS C:\Python_Projects\Pi\Pi-Trade-Secret> python cli.py verify xuguifang@danfoss.com https://danfoss.sharepoint.com/sites/TradeSecret
+Traceback (most recent call last):
+  File "C:\Python_Projects\Pi\Pi-Trade-Secret\cli.py", line 416, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "C:\Python_Projects\Pi\Pi-Trade-Secret\cli.py", line 412, in main
+    return args.func(args)
+           ^^^^^^^^^^^^^^^
+  File "C:\Python_Projects\Pi\Pi-Trade-Secret\cli.py", line 341, in cmd_verify
+    result = verify_user(args.site_url, str(db_path), args.email)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python_Projects\Pi\Pi-Trade-Secret\remediate\verify.py", line 53, in verify_user
+    init_schema(conn)
+    ^^^^^^^^^^^
+NameError: name 'init_schema' is not defined
