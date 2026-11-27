@@ -120,6 +120,7 @@ def run_scan(site_url: str, db_path: str | Path, *,
         site_links: dict[tuple, dict] = {}
         link_rows = 0
         grant_rows = 0
+        scope_graph_updates: list[tuple[str, str | None, str | None]] = []
 
         def bucket_site(parsed: dict) -> None:
             """Inherited entries observed at library roots belong to the site scope."""
@@ -163,6 +164,7 @@ def run_scan(site_url: str, db_path: str | Path, *,
             )
             for item, permissions, graph_id in unique_results:
                 item_scope = f"item:{library['list_guid']}:{item['item_id']}"
+                scope_graph_updates.append((item_scope, library["drive_id"], graph_id))
                 for parsed in permissions:
                     if parsed["inherited"]:
                         continue  # covered by the ancestor scope's own expansion
@@ -174,12 +176,19 @@ def run_scan(site_url: str, db_path: str | Path, *,
                         writer.write_grant(item_scope, parsed)
                         grant_rows += 1
 
+            # library scope graph identity: drive id + root address (no item id)
+            if library["unique_flag"]:
+                scope_graph_updates.append(
+                    (f"list:{library['list_guid']}", library["drive_id"], None)
+                )
+
         for parsed in site_grants.values():
             writer.write_grant("web", parsed)
             grant_rows += 1
         for parsed in site_links.values():
             writer.write_link("web", parsed["link"], None, None, parsed)
             link_rows += 1
+        writer.set_scope_graph_ids(scope_graph_updates)
 
         # ---- stats ---------------------------------------------------------------
         objects_counts = {"site": 0, "library": 0, "folder": 0, "file": 0}

@@ -52,12 +52,13 @@ ON CONFLICT(principal_key) DO UPDATE SET
 """
 
 _ROLE_ASSIGNMENT_UPSERT = """
-INSERT INTO role_assignments(scope_id, principal_key, principal_id, roles,
+INSERT INTO role_assignments(scope_id, principal_key, principal_id, roles, permission_id,
                              first_seen_run_id, last_seen_run_id)
-VALUES (?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(scope_id, principal_key) DO UPDATE SET
     principal_id = excluded.principal_id,
     roles = excluded.roles,
+    permission_id = excluded.permission_id,
     last_seen_run_id = excluded.last_seen_run_id
 """
 
@@ -192,6 +193,19 @@ class RunWriter:
         if scope_rows:
             self.conn.executemany(_SCOPE_UPSERT, scope_rows)
 
+    def set_scope_graph_ids(self, updates: list[tuple[str, str | None, str | None]]) -> None:
+        """Phase 2: record each unique scope's Graph identity.
+
+        (scope_id, graph_drive_id, graph_item_id). Library scopes use the
+        root address (graph_item_id stays NULL); site scopes have neither.
+        """
+        for scope_id, drive_id, item_id in updates:
+            self.conn.execute(
+                "UPDATE permission_scopes SET graph_drive_id = ?, graph_item_id = ? "
+                "WHERE scope_id = ?",
+                (drive_id, item_id, scope_id),
+            )
+
     def write_groups(self, groups: list[dict]) -> None:
         for group in groups:
             title = str(group["title"])
@@ -230,6 +244,7 @@ class RunWriter:
             principal_id = int(raw_id) if str(raw_id).isdigit() else None
         self.conn.execute(_ROLE_ASSIGNMENT_UPSERT, (
             scope_id, principal_key, principal_id, parsed.get("roles") or "",
+            parsed.get("permission_id"),
             self.run_id, self.run_id,
         ))
 

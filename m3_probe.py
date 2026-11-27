@@ -32,12 +32,23 @@ if str(BASE_DIR) not in sys.path:
 
 from core.auth import TokenSession  # noqa: E402
 from core.http import RequestError, ScHttpClient  # noqa: E402
-from core.parse import _excerpt, _first_entry  # noqa: E402
+from core.parse import first_entry  # noqa: E402
 
 LOGGER = logging.getLogger("s3scope.m3probe")
 EXCERPT_LIMIT = 600
 DEFAULT_LIST = "66d491e7-961a-4103-bf06-f9fa351f66cb"   # Trade Secret Library
 DEFAULT_ITEM = 35                                        # Test_Permission.docx
+
+
+def _excerpt(body: Any, limit: int = EXCERPT_LIMIT) -> str:
+    if body is None:
+        return ""
+    try:
+        text = body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)
+    except Exception:
+        text = str(body)
+    text = text or ""
+    return text[:limit] + ("...[truncated]" if len(text) > limit else "")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -80,18 +91,32 @@ def main(argv: list[str] | None = None) -> int:
 
     # -- 1. consent: ask for FullControl (single scope set with Read) -----------
     fullcontrol_scopes = ("Sites.Read.All", "Sites.FullControl.All")
+    readwrite_scopes = ("Sites.Read.All", "Sites.ReadWrite.All")
     consent_ok = True
+    consent_scopes = fullcontrol_scopes
     try:
         session.get_token(fullcontrol_scopes)
         record("C1", "Graph token with Sites.FullControl.All consent", True, "-", None,
                "consent accepted")
     except Exception as error:
-        consent_ok = False
         record("C1", "Graph token with Sites.FullControl.All consent", False, "-", None,
-               f"consent failed: {error}; continuing with Sites.Read.All")
-        session = TokenSession(graph_scopes=("Sites.Read.All",))
-        client = ScHttpClient(session)
-        session.get_token(("Sites.Read.All",))
+               f"consent failed: {error}; trying Sites.ReadWrite.All fallback")
+        try:
+            session = TokenSession(graph_scopes=("Sites.Read.All",))
+            client = ScHttpClient(session)
+            session.get_token(readwrite_scopes)
+            consent_ok = False
+            consent_scopes = readwrite_scopes
+            record("C1b", "Graph token with Sites.ReadWrite.All consent", True, "-", None,
+                   "fallback consent accepted (Graph write path only)")
+        except Exception as error2:
+            consent_ok = False
+            record("C1b", "Graph token with Sites.ReadWrite.All consent", False, "-", None,
+                   f"fallback failed: {error2}; M3 writes will need admin consent")
+            session = TokenSession(graph_scopes=("Sites.Read.All",))
+            client = ScHttpClient(session)
+            session.get_token(("Sites.Read.All",))
+            consent_scopes = ("Sites.Read.All",)
 
     # -- 2. SP site-resource token (inherits the new consent via .default) ------
     try:
@@ -110,8 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         }
 
     try:
-        graph_claims = session.claims_for(fullcontrol_scopes if consent_ok
-                                          else ("Sites.Read.All",))
+        graph_claims = session.claims_for(consent_scopes)
         sp_claims = session.claims_for([f"https://{host}/.default"])
         record("C3", "token scp claims", True, "-", None,
                notes=json.dumps({"graph": safe(graph_claims),
@@ -122,21 +146,21 @@ def main(argv: list[str] | None = None) -> int:
     # -- 4. REST roleassignments retests (were 403 in m0b) ------------------------
     url = f"{site_url}/_api/web/roleassignments?$expand=RoleDefinitionBindings,Member&$top=50"
     body, status, err = get(url)
-    first = _first_entry(body)
+    first = first_entry(body)
     record("P1", "web roleassignments (m0b was 403)", first is not None, url, body, status,
            f"entries: {first is not None}" + (f"; error: {err}" if err else ""))
 
     url = (f"{site_url}/_api/web/lists('{args.list}')"
            "/roleassignments?$expand=RoleDefinitionBindings,Member&$top=50")
     body, status, err = get(url)
-    first = _first_entry(body)
+    first = first_entry(body)
     record("P2", "list roleassignments (m0b was 403)", first is not None, url, body, status,
            f"entries: {first is not None}" + (f"; error: {err}" if err else ""))
 
     url = (f"{site_url}/_api/web/lists('{args.list}')/items({args.item})"
            "/roleassignments?$expand=RoleDefinitionBindings,Member&$top=50")
     body, status, err = get(url)
-    first = _first_entry(body)
+    first = first_entry(body)
     member = first.get("Member") if isinstance(first, dict) else {}
     bindings = first.get("RoleDefinitionBindings") if isinstance(first, dict) else None
     role_names = (";".join(str(b.get("Name")) for b in bindings if isinstance(b, dict))

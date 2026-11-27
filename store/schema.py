@@ -20,7 +20,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 TABLES: dict[str, str] = {
     "scan_runs": """
@@ -62,6 +62,8 @@ TABLES: dict[str, str] = {
             root_path TEXT,
             inheriting_count INTEGER NOT NULL DEFAULT 0,
             status TEXT NOT NULL DEFAULT 'active',
+            graph_drive_id TEXT,              -- Graph drive of the scope (Phase 2)
+            graph_item_id TEXT,               -- Graph item id of the scope root (Phase 2)
             first_seen_run_id TEXT NOT NULL,
             last_seen_run_id TEXT NOT NULL
         )
@@ -82,7 +84,8 @@ TABLES: dict[str, str] = {
             scope_id TEXT NOT NULL,
             principal_key TEXT NOT NULL,
             principal_id INTEGER,             -- SharePoint principal id (used by DELETE)
-            roles TEXT,                       -- 'Full Control;Contribute'
+            roles TEXT,                       -- 'Full Control;Contribute' (Graph: owner;write;read)
+            permission_id TEXT,               -- Graph permission id (Graph DELETE path)
             first_seen_run_id TEXT NOT NULL,
             last_seen_run_id TEXT NOT NULL,
             PRIMARY KEY (scope_id, principal_key)
@@ -219,6 +222,17 @@ INDEXES: tuple[str, ...] = (
 TABLE_NAMES = tuple(TABLES)
 
 
+# Additive migrations applied to EXISTING databases (never rewrite in place).
+# Key = target version, value = statements to run when upgrading from (key-1).
+MIGRATIONS: dict[int, tuple[str, ...]] = {
+    2: (
+        "ALTER TABLE role_assignments ADD COLUMN permission_id TEXT",
+        "ALTER TABLE permission_scopes ADD COLUMN graph_drive_id TEXT",
+        "ALTER TABLE permission_scopes ADD COLUMN graph_item_id TEXT",
+    ),
+}
+
+
 def connect(db_path: str | Path) -> sqlite3.Connection:
     """Open (and create) the governance database with safe pragmas."""
     path = str(db_path)
@@ -232,21 +246,26 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
 
 
 def init_schema(conn: sqlite3.Connection) -> dict:
-    """Create all tables/indexes on a fresh database; idempotent.
-
-    Future versions must only append migrations additively (never rewrite an
-    existing table in place) and bump SCHEMA_VERSION.
-    """
+    """Create all tables/indexes on a fresh database; migrate additively otherwise."""
     current = conn.execute("PRAGMA user_version").fetchone()[0]
     if current >= SCHEMA_VERSION:
-        return {"schema_version": current, "already_initialized": True}
-    for statement in TABLES.values():
-        conn.execute(statement)
-    for statement in INDEXES:
-        conn.execute(statement)
+        return {"schema_version": current, "already_initialized": True, "migrated_from": current}
+    migrated_from = current
+    if current == 0:
+        # fresh database: CREATE statements already carry the latest columns
+        for statement in TABLES.values():
+            conn.execute(statement)
+        for statement in INDEXES:
+            conn.execute(statement)
+    else:
+        # existing database: apply additive migrations only (never re-create)
+        for version in range(current, SCHEMA_VERSION):
+            for statement in MIGRATIONS.get(version + 1, ()):
+                conn.execute(statement)
     conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     conn.commit()
-    return {"schema_version": SCHEMA_VERSION, "already_initialized": False}
+    return {"schema_version": SCHEMA_VERSION, "already_initialized": False,
+            "migrated_from": migrated_from}
 
 
 def schema_status(conn: sqlite3.Connection) -> dict:

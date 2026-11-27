@@ -90,17 +90,20 @@ class ScHttpClient:
 
     # -- public API --------------------------------------------------------------
 
-    def get_json(self, url: str, *, accept: str | None = None) -> Any:
-        return self.request("GET", url, accept=accept)
+    def get_json(self, url: str, *, accept: str | None = None, headers: dict | None = None) -> Any:
+        return self.request("GET", url, accept=accept, headers=headers)
 
-    def post_json(self, url: str, body: Any = None, *, accept: str | None = None) -> Any:
-        return self.request("POST", url, json_body=body, accept=accept)
+    def post_json(self, url: str, body: Any = None, *, accept: str | None = None,
+                  headers: dict | None = None) -> Any:
+        return self.request("POST", url, json_body=body, accept=accept, headers=headers)
 
-    def patch_json(self, url: str, body: Any, *, accept: str | None = None) -> Any:
-        return self.request("PATCH", url, json_body=body, accept=accept)
+    def patch_json(self, url: str, body: Any, *, accept: str | None = None,
+                   headers: dict | None = None) -> Any:
+        return self.request("PATCH", url, json_body=body, accept=accept, headers=headers)
 
-    def delete(self, url: str, *, accept: str | None = None) -> Any:
-        return self.request("DELETE", url, accept=accept)
+    def delete(self, url: str, *, accept: str | None = None,
+               headers: dict | None = None) -> Any:
+        return self.request("DELETE", url, accept=accept, headers=headers)
 
     def pages(self, url: str, *, accept: str | None = None) -> Iterator[Any]:
         """Yield each page's parsed body, following Graph/SharePoint next links."""
@@ -121,6 +124,7 @@ class ScHttpClient:
         *,
         json_body: Any = None,
         accept: str | None = None,
+        headers: dict | None = None,
     ) -> Any:
         self._validate_url(url)
         accept = accept or self._default_accept(url)
@@ -130,7 +134,7 @@ class ScHttpClient:
         while True:
             attempt += 1
             try:
-                return self._send(method, url, payload, accept)
+                return self._send(method, url, payload, accept, headers)
             except urllib.error.HTTPError as error:
                 status = error.code
                 body = self._read_error_body(error)
@@ -168,12 +172,15 @@ class ScHttpClient:
                     continue
                 raise RequestError(None, url, str(error))
 
-    def _send(self, method: str, url: str, payload: bytes | None, accept: str) -> Any:
+    def _send(self, method: str, url: str, payload: bytes | None, accept: str,
+              extra_headers: dict | None = None) -> Any:
         request = urllib.request.Request(url, data=payload, method=method)
         request.add_header("Authorization", f"Bearer {self.session.get_token_for_url(url)}")
         request.add_header("Accept", accept)
         if payload is not None:
             request.add_header("Content-Type", "application/json")
+        for key, value in (extra_headers or {}).items():
+            request.add_header(key, value)
         with urllib.request.urlopen(request, timeout=self.timeout) as response:
             raw = response.read().decode("utf-8", errors="replace")
         return json.loads(raw) if raw else None

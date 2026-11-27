@@ -247,6 +247,106 @@ def cmd_query(args: argparse.Namespace) -> int:
         conn.close()
 
 
+def cmd_plan(args: argparse.Namespace) -> int:
+    db_path = Path(args.db)
+    if not db_path.exists():
+        print(f"数据库不存在: {db_path}（先运行 scan）")
+        return 1
+    conn = connect(db_path)
+    try:
+        from remediate.plan import build_plan
+
+        plan = build_plan(conn, args.email)
+    finally:
+        conn.close()
+
+    print("=" * 64)
+    print(f"清除方案    {plan['target_email']}  ({plan['operation_id']})")
+    print(f"数据源      扫描 {plan['source_run_id']}")
+    print(f"操作        {plan['summary']['total']} 项，其中可自动执行 "
+          f"{plan['summary']['executable']} 项")
+    for i, op in enumerate(plan["operations"], 1):
+        target = (op.get("path") or op.get("group") or op.get("link")
+                  or op.get("principal_email") or "")
+        method = op.get("method", "-")
+        extra = op.get("note") or op.get("roles") or ""
+        print(f"  {i:>3}. {op['op']:<34} [{method:<6}] {target} {extra}")
+    print("=" * 64)
+    print("提示: python cli.py apply <plan.json> 预览执行；加 --apply 才真正写入")
+
+    out = Path(args.out) if args.out else Path("plans") / f"{plan['operation_id']}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(plan, ensure_ascii=False, indent=2),
+                   encoding="utf-8")
+    print(f"方案已写入 {out}")
+    return 0
+
+
+def cmd_apply(args: argparse.Namespace) -> int:
+    db_path = Path(args.db)
+    plan_path = Path(args.plan_file)
+    if not db_path.exists() or not plan_path.exists():
+        print(f"缺少文件: {db_path} / {plan_path}")
+        return 1
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s")
+    conn = connect(db_path)
+    try:
+        from remediate.apply import execute_plan
+
+        if not args.apply:
+            print(f"=" * 64)
+            print(f"预览（dry-run）  {plan['target_email']}  "
+                  f"({plan['operation_id']}) — 不会执行任何写操作")
+        else:
+            print(f"=" * 64)
+            print(f"正式执行        {plan['target_email']}  "
+                  f"({plan['operation_id']})")
+        summary = execute_plan(plan, conn, args.site_url,
+                               apply_changes=args.apply)
+        print(f"=" * 64)
+        print(f"执行 {summary['executed']} 项: 成功 {summary['ok']} / "
+              f"失败 {summary['failed']} / 跳过 {summary['skipped']}")
+        for failure in summary["failed_details"]:
+            print(f"  [失败] {failure['op']} {failure['target']}: {failure['error']}")
+        if summary["failed"] == 0 and summary["ok"] > 0:
+            print("下一步: python cli.py verify <email> 验证零残留")
+        return 0 if summary["failed"] == 0 else 2
+    finally:
+        conn.close()
+
+
+def cmd_verify(args: argparse.Namespace) -> int:
+    db_path = Path(args.db)
+    if not db_path.exists():
+        print(f"数据库不存在: {db_path}（先运行 scan）")
+        return 1
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s")
+    from remediate.verify import verify_user
+
+    result = verify_user(args.site_url, str(db_path), args.email)
+    print("=" * 64)
+    print(f"验证        {result['email']}")
+    print(f"清除前      {result['before']}")
+    print(f"清除后      {result['after']}")
+    print(f"复扫        {result['scan']['run_id']} ({result['scan']['status']}, "
+          f"{result['scan']['requests']} 请求)")
+    if result["residual"]:
+        print("结论        仍有残留：")
+        for item in result["after_details"]["direct_grants"]:
+            print(f"  [直接授权] {item}")
+        for item in result["after_details"]["group_memberships"]:
+            print(f"  [组成员]   {item}")
+        for item in result["after_details"]["links"]:
+            print(f"  [链接]     {item}")
+        print("=" * 64)
+        return 2
+    print("结论        零残留（直接授权 / 组成员 / 链接收件人全部清零）")
+    print("=" * 64)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="s3scope", description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -274,6 +374,26 @@ def main(argv: list[str] | None = None) -> int:
     query_parser.add_argument("--db", default=str(DEFAULT_DB))
     query_parser.add_argument("--json", default=None, help="可选：同时写入 JSON 文件")
     query_parser.set_defaults(func=cmd_query)
+
+    plan_parser = sub.add_parser("plan", help="邮箱 -> 清除方案（dry-run 源，离线）")
+    plan_parser.add_argument("email")
+    plan_parser.add_argument("--db", default=str(DEFAULT_DB))
+    plan_parser.add_argument("--out", default=None, help="方案 JSON 输出路径")
+    plan_parser.set_defaults(func=cmd_plan)
+
+    apply_parser = sub.add_parser("apply", help="执行清除方案（默认 dry-run，--apply 才写入）")
+    apply_parser.add_argument("plan_file", help="plan 生成的 JSON 文件")
+    apply_parser.add_argument("site_url", help="https://<tenant>.sharepoint.com/sites/<site>")
+    apply_parser.add_argument("--db", default=str(DEFAULT_DB))
+    apply_parser.add_argument("--apply", action="store_true",
+                              help="真正执行写操作（默认仅预览）")
+    apply_parser.set_defaults(func=cmd_apply)
+
+    verify_parser = sub.add_parser("verify", help="清除后复扫 + 零残留验证")
+    verify_parser.add_argument("email")
+    verify_parser.add_argument("site_url")
+    verify_parser.add_argument("--db", default=str(DEFAULT_DB))
+    verify_parser.set_defaults(func=cmd_verify)
 
     args = parser.parse_args(argv)
     return args.func(args)

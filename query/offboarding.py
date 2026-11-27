@@ -31,9 +31,12 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
 
     direct = [
         dict(row) for row in conn.execute(
-            "SELECT ps.scope_id, ps.scope_type, ps.root_path, ra.roles "
+            "SELECT ps.scope_id, ps.scope_type, ps.root_path, ra.roles, "
+            "ra.permission_id, ra.principal_id, p.principal_type, "
+            "p.email AS principal_email, p.display_name, p.login_name "
             "FROM role_assignments ra "
             "JOIN permission_scopes ps ON ps.scope_id = ra.scope_id "
+            "LEFT JOIN principals p ON p.principal_key = ra.principal_key "
             "WHERE ra.principal_key = ? "
             "ORDER BY ps.root_path",
             (principal_key,),
@@ -42,7 +45,7 @@ def query_grants(conn: sqlite3.Connection, email: str) -> dict:
 
     memberships = [
         dict(row) for row in conn.execute(
-            "SELECT sg.group_id, sg.group_name, sg.is_default_group "
+            "SELECT sg.group_id, sg.group_name, sg.is_default_group, m.member_login "
             "FROM site_group_members m "
             "JOIN site_groups sg ON sg.site_id = m.site_id AND sg.group_id = m.group_id "
             "WHERE m.member_key = ? OR m.member_email = ? "
