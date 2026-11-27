@@ -1,0 +1,112 @@
+{
+  "operation_id": "20261127T045203_d975ab",
+  "target_email": "xuguifang@danfoss.com",
+  "generated_at": "2026-11-27T04:52:03+00:00",
+  "source_run_id": "20261127T045026_0e8630",
+  "operations": [
+    {
+      "op": "delete_role_assignment",
+      "method": "graph",
+      "principal_key": "user:xuguifang@danfoss.com",
+      "principal_email": "xuguifang@danfoss.com",
+      "principal_id": null,
+      "roles": "write",
+      "scope_id": "item:66d491e7-961a-4103-bf06-f9fa351f66cb:288",
+      "scope_type": "folder",
+      "path": "/sites/TradeSecret/Trade Secret Library/02_NPD",
+      "site_id": "59b88f73-04fc-4796-ba10-7da00955d81d",
+      "list_id": "66d491e7-961a-4103-bf06-f9fa351f66cb",
+      "item_id": 288,
+      "graph_drive_id": "b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL",
+      "graph_item_id": "01S4KOHXKYX3KXB7OMGVF3HNZ3W5UH55BW",
+      "graph_permission_id": "aTowIy5mfG1lbWJlcnNoaXB8eHVndWlmYW5nQGRhbmZvc3MuY29t"
+    },
+    {
+      "op": "delete_role_assignment",
+      "method": "graph",
+      "principal_key": "user:xuguifang@danfoss.com",
+      "principal_email": "xuguifang@danfoss.com",
+      "principal_id": null,
+      "roles": "write",
+      "scope_id": "item:66d491e7-961a-4103-bf06-f9fa351f66cb:15",
+      "scope_type": "folder",
+      "path": "/sites/TradeSecret/Trade Secret Library/Automatic File Categorization",
+      "site_id": "59b88f73-04fc-4796-ba10-7da00955d81d",
+      "list_id": "66d491e7-961a-4103-bf06-f9fa351f66cb",
+      "item_id": 15,
+      "graph_drive_id": "b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL",
+      "graph_item_id": "01S4KOHXNRMFI22GQIHZAJQGNXE3HOS56J",
+      "graph_permission_id": "aTowIy5mfG1lbWJlcnNoaXB8eHVndWlmYW5nQGRhbmZvc3MuY29t"
+    },
+    {
+      "op": "delete_role_assignment",
+      "method": "graph",
+      "principal_key": "user:xuguifang@danfoss.com",
+      "principal_email": "xuguifang@danfoss.com",
+      "principal_id": null,
+      "roles": "read",
+      "scope_id": "item:66d491e7-961a-4103-bf06-f9fa351f66cb:35",
+      "scope_type": "file",
+      "path": "/sites/TradeSecret/Trade Secret Library/Confidential/Test_Permission.docx",
+      "site_id": "59b88f73-04fc-4796-ba10-7da00955d81d",
+      "list_id": "66d491e7-961a-4103-bf06-f9fa351f66cb",
+      "item_id": 35,
+      "graph_drive_id": "b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL",
+      "graph_item_id": "01S4KOHXL4JXZSUIQNHBHIZRCQQF5ADS4J",
+      "graph_permission_id": "aTowIy5mfG1lbWJlcnNoaXB8eHVndWlmYW5nQGRhbmZvc3MuY29t"
+    },
+    {
+      "op": "remove_site_group_member",
+      "method": "rest",
+      "group": "TS-L2 Group",
+      "group_id": 13,
+      "member_login": "i:0#.f|membership|xuguifang@danfoss.com",
+      "member_email": "xuguifang@danfoss.com"
+    },
+    {
+      "op": "skip_system_group",
+      "group": "SharingLinks.ad5161b1-081a-403e-9819-b726cee977c9.Flexible.09ce0264-a0ca-4890-8497-838c3c021684",
+      "group_id": 25,
+      "note": "系统管理组，不可手动移除"
+    },
+    {
+      "op": "skip_system_group",
+      "group": "Limited Access System Group For List 66d491e7-961a-4103-bf06-f9fa351f66cb",
+      "group_id": 26,
+      "note": "系统管理组，不可手动移除"
+    },
+    {
+      "op": "skip_system_group",
+      "group": "Limited Access System Group For Web 59b88f73-04fc-4796-ba10-7da00955d81d",
+      "group_id": 27,
+      "note": "系统管理组，不可手动移除"
+    },
+    {
+      "op": "update_sharing_link_recipients",
+      "method": "graph",
+      "link_id": "09ce0264-a0ca-4890-8497-838c3c021684",
+      "path": "/sites/TradeSecret/Trade Secret Library/Automatic File Categorization",
+      "graph_drive_id": "b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL",
+      "graph_item_id": "01S4KOHXNRMFI22GQIHZAJQGNXE3HOS56J",
+      "roles": [
+        "read"
+      ],
+      "remaining_recipients": [
+        {
+          "email": "yong.hu@danfoss.com"
+        }
+      ],
+      "removed_recipient": "xuguifang@danfoss.com"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "by_op": {
+      "delete_role_assignment": 3,
+      "remove_site_group_member": 1,
+      "skip_system_group": 3,
+      "update_sharing_link_recipients": 1
+    },
+    "executable": 5
+  }
+}

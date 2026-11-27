@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-11-27T04:51:30+00:00",
+  "site_url": "https://danfoss.sharepoint.com/sites/TradeSecret",
+  "files_readwrite_consented": false,
+  "summary": {
+    "total": 8,
+    "passed": 4,
+    "failed": [
+      "F0",
+      "F1",
+      "F2",
+      "F3"
+    ]
+  },
+  "results": [
+    {
+      "test": "F0",
+      "title": "Files.ReadWrite 用户级同意（无需管理员）",
+      "ok": false,
+      "status": "未同意（Microsoft authentication failed (access_denied).）；写探测按只读令牌进行，预期 403",
+      "url": "-",
+      "excerpt": "",
+      "notes": ""
+    },
+    {
+      "test": "F0b",
+      "title": "目标项路径寻址",
+      "ok": true,
+      "status": 200,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/root:/Confidential/Test_Permission.docx?$select=id,name",
+      "excerpt": "{\"@odata.context\": \"https://graph.microsoft.com/v1.0/$metadata#Collection(driveItem)/$entity\", \"@odata.etag\": \"\\\"{2AF34D7C-0D22-4E38-8CC4-50817A01CB89},16\\\"\", \"id\": \"01S4KOHXL4JXZSUIQNHBHIZRCQQF5ADS4J\", \"name\": \"Test_Permission.docx\"}",
+      "notes": "item id: 01S4KOHXL4JXZSUIQNHBHIZRCQQF5ADS4J"
+    },
+    {
+      "test": "F1",
+      "title": "Graph DELETE 写权限探测（假 permission id）",
+      "ok": false,
+      "status": 400,
+      "url": "https://graph.microsoft.com/v1.0/drives/b!uYewc-mCeEq2cYTW8Jf-C3OPuFn8BJZHuhB9oAlV2B3nkdRmGpYDQb8G-fo1H2bL/items/01S4KOHXL4JXZSUIQNHBHIZRCQQF5ADS4J/permissions/00000000-0000-0000-0000-000000000000",
+      "excerpt": "{\"error\":{\"code\":\"invalidRequest\",\"message\":\"Invalid request\",\"innerError\":{\"date\":\"2026-11-27T04:51:29\",\"request-id\":\"48e5605b-4b2c-466d-b24d-e1f835a522f3\",\"client-request-id\":\"48e5605b-4b2c-466d-b24d-e1f835a522f3\"}}}",
+      "notes": "HTTP 400 = 需人工判读"
+    },
+    {
+      "test": "F2a-0",
+      "title": "SP 站点资源令牌",
+      "ok": true,
+      "status": null,
+      "url": "-",
+      "excerpt": "",
+      "notes": "acquired"
+    },
+    {
+      "test": "F2a",
+      "title": "REST contextinfo（request digest）",
+      "ok": true,
+      "status": 200,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/contextinfo",
+      "excerpt": "{\"d\": {\"GetContextWebInformation\": {\"__metadata\": {\"type\": \"SP.ContextWebInformation\"}, \"FormDigestTimeoutSeconds\": 1800, \"FormDigestValue\": \"0x7A91598E1C2D635CB1C37DB496A2C4AC019A85CB089AE4B5DA2EA9E105475FCFBC916D675D5344D66CECB2CAD11E57D5B9F9B16FE393244822DAE046DAE66B83,27 Nov 2026 04:51:29 -0000\", \"LibraryVersion\": \"16.0.27911.12006\", \"SiteFullUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\", \"SupportedSchemaVersions\": {\"__metadata\": {\"type\": \"Collection(Edm.String)\"}, \"results\": [\"14.0.0.0\", \"15.0.0.0\"]}, \"WebFullUrl\": \"https://danfoss.sharepoint.com/sites/TradeSecret\"}}}",
+      "notes": "digest acquired"
+    },
+    {
+      "test": "F2",
+      "title": "REST DELETE 写权限探测（假 principal id）",
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/lists('66d491e7-961a-4103-bf06-f9fa351f66cb')/items(35)/roleassignments(999999)",
+      "excerpt": "{\"odata.error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Attempted to perform an unauthorized operation.\"}}}",
+      "notes": "403 = 无写权限（授权层拦截）"
+    },
+    {
+      "test": "F3",
+      "title": "REST POST 移组成员写权限探测（假登录名）",
+      "ok": false,
+      "status": 403,
+      "url": "https://danfoss.sharepoint.com/sites/TradeSecret/_api/web/sitegroups(12)/users/removebyloginname(@v)?@v='nonexistent.probe%40invalid.example'",
+      "excerpt": "{\"error\":{\"code\":\"-2147024891, System.UnauthorizedAccessException\",\"message\":{\"lang\":\"en-US\",\"value\":\"Access is denied. (Exception from HRESULT: 0x80070005 (E_ACCESSDENIED))\"}}}",
+      "notes": "403 = 无写权限"
+    },
+    {
+      "test": "F4",
+      "title": "令牌 scp 证据",
+      "ok": true,
+      "status": null,
+      "url": "-",
+      "excerpt": "",
+      "notes": "{\"graph\": {\"has_files_rw\": false, \"has_fullcontrol\": false, \"has_sites_read\": true, \"scp_excerpt\": \"AccessReview.Read.All AdministrativeUnit.Read.All Agreement.Read.All APIConnectors.Read.All APIConnectors.ReadWrite.All Application.Read.All Application.ReadWrite.All AppRoleAssignment.ReadWrite.All AuditLog.Read.All DelegatedPermissionGrant.ReadWrite.All Device.Read.All Device.ReadWrite.All DeviceM\"}, \"sharepoint\": {\"has_files_rw\": false, \"has_fullcontrol\": false, \"has_sites_read\": true, \"scp_excerpt\": \"AccessReview.Read.All AdministrativeUnit.Read.All Agreement.Read.All APIConnectors.Read.All APIConnectors.ReadWrite.All Application.Read.All Application.ReadWrite.All AppRoleAssignment.ReadWrite.All AuditLog.Read.All DelegatedPermissionGrant.ReadWrite.All Device.Read.All Device.ReadWrite.All DeviceM\"}}"
+    }
+  ]
+}
