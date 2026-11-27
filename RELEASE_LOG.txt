@@ -1,6 +1,11 @@
 s3scope 版本日志（每次推送一个新版本，最新在最上面）
 =====================================================
 
+v3.1 | 2026-11-27 09:55 | dump 命令（数据库转文本）
+  新增: python cli.py dump [--limit N]
+  用途: 把 SQLite 内容变成可直接粘贴/推送的文本（二进制 .sqlite3 不能直接贴）
+  预期结果: 输出 RUN/STATS/SCOPES/GRANTS/LINKS/GROUPS 六段结构化文本
+
 v3.0 | 2026-11-27 09:55 | M1 两阶段作用域扫描器
   新增:
     - scan/  discovery(Phase1 作用域发现) + expansion(Phase2 仅独立对象展开)

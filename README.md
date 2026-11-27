@@ -57,5 +57,6 @@ git checkout v2.1        # 切换到指定版本
 | v2.0 | M0 骨架：auth/http 核心、Scope 十二表、m0_validate |
 | v2.1 | M0b 补测：真实库端点探针、minimalmetadata 分页修复 |
 | v3.0 | M1 两阶段扫描器：scan/ + cli.py + parse（见 RELEASE_LOG.txt） |
+| v3.1 | cli.py dump：数据库转结构化文本（便于粘贴分享） |
 
 之后：大版本对应里程碑（v3.0 = M1 扫描器、v4.0 = M2 查询、v5.0 = M3 清除闭环、v6.0 = M4 对照），小版本（v2.2…）为里程碑内的增量推送。
