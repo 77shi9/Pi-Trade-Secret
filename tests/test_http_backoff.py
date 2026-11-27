@@ -40,6 +40,10 @@ class NextLinkTest(unittest.TestCase):
         body = {"d": {"results": [], "__next": "https://x.sharepoint.com/_api/y"}}
         self.assertEqual(next_link(body), "https://x.sharepoint.com/_api/y")
 
+    def test_sharepoint_minimalmetadata_next_link(self):
+        body = {"value": [], "odata.nextLink": "https://x.sharepoint.com/_api/y"}
+        self.assertEqual(next_link(body), "https://x.sharepoint.com/_api/y")
+
     def test_no_next_link(self):
         self.assertIsNone(next_link({"value": []}))
         self.assertIsNone(next_link(None))

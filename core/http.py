@@ -66,7 +66,7 @@ def next_link(body: Any) -> str | None:
     """Extract the next-page link from Graph / SharePoint REST responses."""
     if not isinstance(body, Mapping):
         return None
-    link = body.get("@odata.nextLink") or body.get("nextLink")
+    link = body.get("@odata.nextLink") or body.get("nextLink") or body.get("odata.nextLink")
     if isinstance(link, str) and link:
         return link
     nested = body.get("d")
