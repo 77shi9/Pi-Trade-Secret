@@ -1,0 +1,26 @@
+s3scope 版本日志（每次推送一个新版本，最新在最上面）
+=====================================================
+
+v3.0 | 2026-11-27 09:55 | M1 两阶段作用域扫描器
+  新增:
+    - scan/  discovery(Phase1 作用域发现) + expansion(Phase2 仅独立对象展开)
+             + persist(SQLite 落库) + scanner(编排+API请求计数)
+    - cli.py  scan / status 两个命令
+    - core/parse.py  Graph权限/REST解析
+  预期结果:
+    - python cli.py scan https://<tenant>.sharepoint.com/sites/<site>
+      -> 生成 data/governance.sqlite3
+      -> 控制台输出: 对象总数 / 独立作用域数 / 继承率 / 权限读取次数 / API请求数
+    - python cli.py status -> 数据库概况(作用域/授权/链接/组)
+    - 离线测试: python -m unittest discover -s tests -v (22个全部通过)
+  推送验证: 公司电脑 git pull && git tag -l 看到 v3.0 即成功
+
+v2.1 | 2026-11-27 09:37 | M0b 端点补测
+  新增: m0b_validate.py (真实库GUID自动推导 + 15组探针)
+  结论: 列表项 HasUniqueRoleAssignments 可用(A4)；
+        REST roleassignments 403(A5/A6) -> Phase 2 走 Graph permissions；
+        minimalmetadata 分页修复(odata.nextLink)
+
+v2.0 | 2026-11-26 | M0 骨架
+  新增: core/auth.py TokenSession(双受众令牌) + core/http.py(白名单/401/429退避)
+        + store/schema.py Scope十二表 + m0_validate.py + 14个离线测试

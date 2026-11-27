@@ -10,26 +10,31 @@ Trade Secret Governance S3 的后继项目：以 `HasUniqueRoleAssignments` 为�
 
 目标、边界与验收标准见 **GOALS.md**。
 
-## 当前状态：M0 — 骨架 + 租户端点验证
+## 当前状态：v3.0 — M1 两阶段扫描器
 
 | 组件 | 状态 |
 | --- | --- |
 | `core/auth.py` TokenSession（Graph + 站点资源双受众、静默优先、一次交互回退） | 完成 |
 | `core/http.py` ScHttpClient（白名单 / 401 续期 / 429 退避 / 分页 / 写动词） | 完成 |
 | `store/schema.py` Scope 十二表 + `user_version` 增量迁移 | 完成 |
-| `m0_validate.py` 租户端点验证（唯一需要登录的脚本） | 待运行 |
-| `scan/` Phase 1 + Phase 2 扫描器 | M1（取决于 M0 结果） |
-| `query/` `remediate/` | M2 / M3 |
+| m0 / m0b 端点验证（真实租户已确认） | 完成 |
+| `scan/` Phase 1 作用域发现 + Phase 2 独立对象展开 + 落库 | 完成（v3.0） |
+| `cli.py` scan / status | 完成 |
+| `query/` 邮箱 → 授权清单 | M2 |
+| `remediate/` plan / apply / verify | M3 |
 
 ## 快速开始
 
 ```powershell
 conda activate s3scope
 
-# 1. 一次真实登录（会打开浏览器），验证关键端点，写入 m0_results.json
-python .\m0_validate.py https://<tenant>.sharepoint.com/sites/<site>
+# 1. 扫描（首次会打开浏览器登录；生成 data/governance.sqlite3）
+python .\cli.py scan https://<tenant>.sharepoint.com/sites/<site>
 
-# 2. 离线测试（无需登录）
+# 2. 数据库概况（离线，只读）
+python .\cli.py status
+
+# 3. 离线测试（无需登录）
 python -m unittest discover -s tests -v
 ```
 
@@ -51,5 +56,6 @@ git checkout v2.1        # 切换到指定版本
 | --- | --- |
 | v2.0 | M0 骨架：auth/http 核心、Scope 十二表、m0_validate |
 | v2.1 | M0b 补测：真实库端点探针、minimalmetadata 分页修复 |
+| v3.0 | M1 两阶段扫描器：scan/ + cli.py + parse（见 RELEASE_LOG.txt） |
 
 之后：大版本对应里程碑（v3.0 = M1 扫描器、v4.0 = M2 查询、v5.0 = M3 清除闭环、v6.0 = M4 对照），小版本（v2.2…）为里程碑内的增量推送。
