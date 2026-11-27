@@ -29,14 +29,16 @@ class FakeClient:
         ("/root?", {"id": "groot", "name": "root",
                     "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs",
                     "sharepointIds": {"listId": "LIB1", "siteId": "s1"}}),
-        # Graph delta (path -> graph id map; must match before permissions)
+        # Graph delta (path -> graph id map; 'sub' intentionally MISSING here to
+        # exercise the path-lookup fallback; must match before permissions)
         ("/root/delta", {"value": [
             {"id": "groot", "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs"},
-            {"id": "g_sub", "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs/sub"},
             {"id": "g_f4", "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs/sub/f4.txt"},
             {"id": "g_f1", "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs/f1.txt"},
             {"id": "g_f2", "webUrl": "https://danfoss.sharepoint.com/sites/TS/Docs/f2.txt"},
         ]}),
+        # Graph path lookup fallback for the unique folder 'sub'
+        ("root:/sub", {"id": "g_sub", "name": "sub"}),
         # Graph root permissions (library scope + site-inherited entries)
         ("/root/permissions", {"value": [
             {"id": "p1", "roles": ["owner"],
@@ -130,8 +132,10 @@ class ScannerFlowTest(unittest.TestCase):
         self.assertEqual(stats["unique_scopes"]["folder"], 1)
         self.assertEqual(stats["inherited_objects"], 3)
         # requests: site 1 + drives 1 + root 1 + web 1 + list 1 + items 1
-        #         + groups 1 + group_users 1 + delta 1 + permissions 2 = 11
-        self.assertEqual(stats["requests"]["total"], 11)
+        #         + groups 1 + group_users 1 + delta 1 + permissions 2
+        #         + path_lookup fallback 1 (sub not in delta) = 12
+        self.assertEqual(stats["requests"]["total"], 12)
+        self.assertEqual(stats["requests"]["graph_path_lookup"], 1)
         self.assertEqual(stats["permission_reads"], 2)
         # grants: web(reader) + lib(TS Owners) + sub(writer); links: web(org) + sub(users)
         self.assertEqual(stats["grants"]["role_assignment_rows"], 3)
@@ -188,6 +192,7 @@ class CountingClientTest(unittest.TestCase):
         self.assertEqual(_classify("https://graph.microsoft.com/v1.0/sites/x/drives?x"), "graph_drives")
         self.assertEqual(_classify("https://graph.microsoft.com/v1.0/drives/d/root/delta?x"), "graph_delta")
         self.assertEqual(_classify("https://graph.microsoft.com/v1.0/drives/d/root/permissions"), "graph_permissions")
+        self.assertEqual(_classify("https://graph.microsoft.com/v1.0/drives/d/root:/sub?x"), "graph_path_lookup")
         self.assertEqual(_classify("https://x.sharepoint.com/_api/web/lists('g')/items?"), "sp_items")
         self.assertEqual(_classify("https://x.sharepoint.com/_api/web/lists('g')?"), "sp_list")
         self.assertEqual(_classify("https://x.sharepoint.com/_api/web?"), "sp_web")

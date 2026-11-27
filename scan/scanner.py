@@ -40,6 +40,8 @@ def _classify(url: str) -> str:
         return "graph_delta"
     if "/permissions" in url:
         return "graph_permissions"
+    if "/root:/" in url:
+        return "graph_path_lookup"
     if "/sitegroups(" in url:
         return "sp_group_users"
     if "/sitegroups" in url:
@@ -159,9 +161,8 @@ def run_scan(site_url: str, db_path: str | Path, *,
             unique_results = expansion.expand_unique_items(
                 counting, library, items, drive_maps.get(library["drive_id"], {}), errors
             )
-            for item, permissions in unique_results:
+            for item, permissions, graph_id in unique_results:
                 item_scope = f"item:{library['list_guid']}:{item['item_id']}"
-                graph_id = drive_maps.get(library["drive_id"], {}).get(item["path"])
                 for parsed in permissions:
                     if parsed["inherited"]:
                         continue  # covered by the ancestor scope's own expansion

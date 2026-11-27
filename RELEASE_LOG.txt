@@ -1,6 +1,13 @@
 s3scope 版本日志（每次推送一个新版本，最新在最上面）
 =====================================================
 
+v4.2 | 2026-11-27 10:40 | delta 缺项回退修复 + M3 前置探测
+  修复: 唯一项不在 delta 映射时（真实案例 Test_Permission.docx），
+        自动回退到路径寻址端点 root:/{relpath}（A8 已验证）
+  新增: m3_probe.py —— 只读探测：申请 Sites.FullControl.All 同意，
+        复测 m0b 时 403 的 roleassignments 端点，记录令牌 scp 证据
+  预期: 重扫后状态应为 success，Test_Permission.docx 的授权应出现
+
 v4.0 | 2026-11-27 10:10 | M2 邮箱 → 授权清单查询
   新增: query/offboarding.py + cli.py query 命令
   用途: python cli.py query <email> [--db ...] [--json out.json]

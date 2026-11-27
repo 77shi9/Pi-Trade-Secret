@@ -15,7 +15,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from core.parse import entries, parse_permission
+from core.parse import entries, entity, parse_permission, server_relative_path
+from urllib.parse import quote
 
 LOGGER = logging.getLogger("s3scope.expansion")
 GRAPH_BASE = "https://graph.microsoft.com/v1.0"
@@ -40,7 +41,6 @@ def build_drive_maps(client: Any, libraries: list[dict]) -> dict[str, dict[str, 
                     web_url = entry.get("webUrl")
                     item_id = entry.get("id")
                     if web_url and item_id:
-                        from core.parse import server_relative_path
                         path_to_id[server_relative_path(web_url)] = str(item_id)
         except Exception as error:
             LOGGER.error("[SCAN] delta for '%s' failed: %s", lib["title"], error)
@@ -67,29 +67,55 @@ def expand_item(client: Any, drive_id: str, graph_item_id: str) -> list[dict]:
     return [parse_permission(e) for e in entries(body) if isinstance(e, dict)]
 
 
+def _path_lookup(client: Any, drive_id: str, root_path: str, path: str) -> str | None:
+    """Resolve a Graph item id by server-relative path (A8-proven endpoint).
+
+    Used as a fallback when the delta map misses a unique item (delta may omit
+    drafts or newly-created items; the path lookup resolves any addressable item).
+    """
+    if root_path and path.startswith(root_path):
+        rel = path[len(root_path):].lstrip("/")
+    else:
+        rel = path.lstrip("/")
+    if not rel:
+        return None
+    url = f"{GRAPH_BASE}/drives/{drive_id}/root:/{quote(rel, safe='/')}?$select=id"
+    try:
+        return entity(client.get_json(url)).get("id")
+    except Exception as error:
+        LOGGER.warning("[SCAN] path lookup failed for %s: %s", path, error)
+        return None
+
+
 def expand_unique_items(client: Any, library: dict, items: list[dict],
                         path_to_id: dict[str, str],
-                        errors: list[dict]) -> list[tuple[dict, list[dict]]]:
+                        errors: list[dict]) -> list[tuple[dict, list[dict], str]]:
     """Fetch permissions for each unique item of one library.
 
-    Returns [(item, parsed_permissions)] plus errors for unresolvable ids.
+    Returns [(item, parsed_permissions, graph_item_id)] plus errors for
+    unresolvable ids. Delta misses fall back to the path lookup endpoint.
     """
-    results: list[tuple[dict, list[dict]]] = []
+    results: list[tuple[dict, list[dict], str]] = []
     drive_id = library["drive_id"]
+    root_path = library.get("root_path") or ""
     for item in items:
         if not item["unique_flag"]:
             continue
         graph_id = path_to_id.get(item["path"])
         if not graph_id:
-            message = f"no Graph id for unique item path={item['path']!r}"
+            # delta missed this item; fall back to the path lookup endpoint
+            graph_id = _path_lookup(client, drive_id, root_path, item["path"])
+        if not graph_id:
+            message = (f"no Graph id for unique item path={item['path']!r} "
+                       f"(delta map size={len(path_to_id)})")
             errors.append({"stage": "phase2", "target": item["path"], "error": message})
             LOGGER.warning("[SCAN] %s", message)
             continue
         try:
-            permissions = expand_item(client, drive_id, graph_id)
+            permissions = expand_item(client, drive_id, str(graph_id))
         except Exception as error:
             errors.append({"stage": "phase2", "target": item["path"], "error": str(error)})
             LOGGER.error("[SCAN] permissions for %s failed: %s", item["path"], error)
             continue
-        results.append((item, permissions))
+        results.append((item, permissions, str(graph_id)))
     return results
